@@ -1,0 +1,9 @@
+data_path:
+  BTC:
+    1min:
+      raw: "Data/crypto-1min/btc-min1/raw_data/"
+      cleaned: "Data/crypto-1min/btc-min1/cleaned_data/"
+  ETH:
+    1min:
+      raw: "Data/crypto-1min/eth-min1/raw_data/"
+      cleaned: "Data/crypto-1min/eth-min1/cleaned_data/"
