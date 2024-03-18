@@ -142,7 +142,7 @@ class RSI:
         """
         Update the RSI.
         """
-        for t in tqdm(range(1, len(self.time_series))):
+        for t in range(1, len(self.time_series)):
             RS = self.RS(t)
 
             self.rsi[t] = 100 - (100 / (1 + RS))
