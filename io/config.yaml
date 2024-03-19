@@ -12,6 +12,26 @@ data_path:
 
 Strategy:
   LSTM:
-    data_path_X: "Data/crypto-1min/eth-min1/neural_data/ETH_MACD_january2024_X.pt"
-    data_path_y: "Data/crypto-1min/eth-min1/neural_data/ETH_MACD_january2024_y.pt"
+    data_path_X: "Data/crypto-1min/eth-min1/neural_data/ETH_MACD_march2024_X.pt"
+    data_path_y: "Data/crypto-1min/eth-min1/neural_data/ETH_MACD_march2024_y.pt"
+    weights_path: "io/LSTM/Weights/"
+    load_weights: True
     batch_size: 64
+    learning_rate: 0.001
+    nb_epochs: 200
+    hidden_size: 15
+    num_layers: 10
+    dropout: 0.2
+    input_size: 1
+  Transformers:
+    data_path_X: "Data/crypto-1min/eth-min1/neural_data/ETH_MACD_march2024_X.pt"
+    data_path_y: "Data/crypto-1min/eth-min1/neural_data/ETH_MACD_march2024_y.pt"
+    weights_path: "io/Transformers/Weights/"
+    embedding_size: 5
+    kernel_size: 3
+    nb_heads: 5
+    forward_expansion: 4
+    forward_expansion_decoder: 4
+    max_len: 100
+    dropout: 0.2
+    normalize: False
