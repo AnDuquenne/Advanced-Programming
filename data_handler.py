@@ -4,9 +4,19 @@ import numpy as np
 import yaml
 import os
 
+# Import deep copy
+from copy import deepcopy as dc
+
 from tqdm import tqdm
 
+import torch
+
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.model_selection import train_test_split
+
 from utils.technical_analysis import StochasticRSI, MACD, DPO, RSI, CC
+
+from torch.utils.data import Dataset, DataLoader
 
 
 class DataCleaner:
@@ -23,6 +33,7 @@ class DataCleaner:
         self.params_path = params_path
         self.load_path = config['data_path'][f'{self.to_load}']['1min']['raw']
         self.save_path = config['data_path'][f'{self.to_load}']['1min']['cleaned']
+        self.save_neural_path = config['data_path'][f'{self.to_load}']['1min']['neural']
         self.files = self.get_files()
 
     def get_files(self):
@@ -62,6 +73,58 @@ class DataCleaner:
             # Save the data
             data.to_csv(self.save_path + file, index=False)
 
+    def prepare_dataframe_LSTM(self, window, look_forward=1):
+
+        assert look_forward < window, "The look_forward parameter must be less than the window parameter."
+
+        for file in tqdm(self.files):
+            df = pd.read_csv(self.save_path + file)
+            df = df[['date', 'close', 'MACD', 'Signal Line', 'Histogram', 'RSI', 'Stochastic RSI', 'DPO', 'CC']]
+            df.set_index('date', inplace=True)
+
+            df_numpy = dc(df).to_numpy()
+
+            # # Minmaxscaler to scale the data expect the "Close" column
+            # scaler = MinMaxScaler(feature_range=(-1, 1))
+            # df_numpy[1:, :] = scaler.fit_transform(df_numpy[1:, :])
+
+            X_torch = torch.zeros(df_numpy.shape[0] - window, df_numpy.shape[1] * window)
+            for i in range(df_numpy.shape[1]):
+                for j in range(window):
+                    X_torch[:, (i * window) + j] = torch.tensor(df_numpy[j: -window + j, i])
+
+            y_torch = dc(X_torch[:, window-look_forward:window])
+
+
+            # Remove the last look_forward columns for the X_torch and the technical indicators
+            df_X = pd.DataFrame(X_torch.numpy())
+            df_y = pd.DataFrame(y_torch.numpy())
+
+            cols_to_drop = []
+            for i in range(df_numpy.shape[1]):
+                for j in range(look_forward):
+                    cols_to_drop.append((i * window) + (window - j) - 1)
+
+            print(cols_to_drop)
+
+            # Create a boolean mask where True indicates the columns we want to keep
+            mask = torch.ones(X_torch.shape[1], dtype=torch.bool)  # Initially set all to True
+            mask[cols_to_drop] = False  # Set the columns we want to drop to False
+
+            # Drop the columns in torch_X
+            # Use the mask to select columns
+            X_torch = X_torch[:, mask]
+
+
+            # Remove the last "look_forward" rows for the x_torch and y_torch
+            # (due to shift in dataset creation, the last "look_forward" rows are not valid)
+            X_torch = X_torch[:-look_forward]
+            y_torch = y_torch[:-look_forward]
+
+            # Save the data as torch tensors
+            torch.save(X_torch, self.save_neural_path + file.replace('.csv', '_X.pt'))
+            torch.save(y_torch, self.save_neural_path + file.replace('.csv', '_y.pt'))
+
 
 if __name__ == '__main__':
     # Load the configuration file
@@ -69,5 +132,6 @@ if __name__ == '__main__':
         config = yaml.safe_load(file)
 
     # Clean the data
-    cleaner = DataCleaner('BTC', 'io/config.yaml')
-    cleaner.clean_data()
+    cleaner = DataCleaner('ETH', 'io/config.yaml')
+    # cleaner.clean_data()
+    cleaner.prepare_dataframe_LSTM(30, 5)
