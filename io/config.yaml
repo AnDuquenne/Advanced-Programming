@@ -31,11 +31,11 @@ Strategy:
     batch_size: 64
     learning_rate: 0.001
     nb_epochs: 200
-    embedding_size: 5
+    embedding_size: 4
     kernel_size: 3
     nb_heads: 5
     forward_expansion: 4
     forward_expansion_decoder: 4
-    max_len: 100
+    max_len: 5000
     dropout: 0.2
     normalize: False

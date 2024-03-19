@@ -36,7 +36,7 @@ class TimeSeriesDataframe(Dataset):
         return self.X[idx], self.y[idx]
 
 
-class TimeSeriesTransformerForecaster:
+class TimeSeriesTransformerForecaster(nn.Module):
 
     def __init__(self,
                  embedding_size,
@@ -267,31 +267,45 @@ class TransformerBlock(nn.Module):
 
 class PositionalEncoding(nn.Module):
 
-    def __init__(self, embed_size, max_len):
+    def __init__(self, embedding_size, max_len):
         super(PositionalEncoding, self).__init__()
+        
+        assert embedding_size % 2 == 0, "Embedding size must be even"
 
-        self.embed_size = embed_size
+        self.embedding_size = embedding_size
         self.max_len = max_len
 
-        # Store a matrix with all possible positions
-        pe = torch.zeros(embed_size, max_len)
-        for pos in range(0, max_len):
-            for i in range(0, embed_size, 2):
-                pe[i, pos] = math.sin(pos / (10000 ** ((2 * i) / embed_size)))
-                pe[i+1, pos] = math.cos(pos / (10000 ** ((2 * (i+1)) / embed_size)))
-        pe = pe.unsqueeze(0)
+        position = torch.arange(self.max_len).unsqueeze(1)
+        div_term = torch.exp(torch.arange(0, self.embedding_size, 2) * -(math.log(10000.0) / self.embedding_size))
+        pe = torch.zeros(self.max_len, self.embedding_size)
+        pe[:, 0::2] = torch.sin(position * div_term)
+        pe[:, 1::2] = torch.cos(position * div_term)
+
+        # Add a batch dimension (TxD) -> (1xTxD)
+        # And change the shape to (1xTxD) -> (1xDxT)
+        pe = pe.unsqueeze(0).transpose(1, 2)
         self.register_buffer('pe', pe)
 
     def forward(self, x):
+        '''
+        Add the positional encoding to the input
 
+        x = Batch size x Sequence size x Embedding size
+        pe = 1 x Sequence size max x Embedding size
+
+        :param x:
+        :return:
+        '''
         # Get seq size
-        seq_len = x.size(2)
+        seq_len = x.size(1)
 
-        # If size is greater that pos embedding saved in memory:
-        if seq_len > self.max_len:
-            self.adapt_len(seq_len)
+        # change the shape of the
+
         # Add positional embedding
-        x = x[:, 0:self.embed_size, 0:seq_len] + self.pe[0, :, :seq_len].to('cuda:0')
+        print("\n", x.size())
+        print(self.pe.size())
+        print(self.pe[:, :, :x.size(2)].size())
+        x = x + self.pe[:, :, :x.size(2)].to('cuda:0')
         return x
 
 if __name__ == '__main__':
