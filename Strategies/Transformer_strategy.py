@@ -45,11 +45,14 @@ class TimeSeriesTransformerForecaster:
                  forward_expansion,
                  forward_expansion_decoder,
                  max_len,
+                 fc_out,
                  dropout,
                  normalize,
                  path_weight_save,
                  path_loss_save,
                  device='cuda:0'):
+
+        super(TimeSeriesTransformerForecaster, self).__init__()
 
         self.embedding_size = embedding_size
         self.kernel_size = kernel_size
@@ -57,6 +60,7 @@ class TimeSeriesTransformerForecaster:
         self.forward_expansion = forward_expansion
         self.forward_expansion_decoder = forward_expansion_decoder
         self.max_len = max_len
+        self.fc_out = fc_out
         self.dropout = dropout
         self.normalize = normalize
         self.device = device
@@ -98,7 +102,7 @@ class TimeSeriesTransformerForecaster:
         self.dec_fc3 = nn.Linear(self.embedding_size * self.forward_expansion_decoder, self.embedding_size)
         self.re3 = nn.ReLU()
 
-        self.dec_fc4 = nn.Linear(self.embedding_size, 5)
+        self.dec_fc4 = nn.Linear(self.embedding_size, self.fc_out)
 
         # Softmax for the end
         self.sm = nn.Softmax(dim=2)
@@ -141,7 +145,7 @@ class SelfAttention(nn.Module):
     """
     The self attention module
     """
-    def __init__(self, embed_size=50, nb_heads=5):
+    def __init__(self, embed_size=5, nb_heads=5):
         """
         :param embed_size: This size is the kernel size of the embedding
         convolutional layer.
@@ -263,7 +267,7 @@ class TransformerBlock(nn.Module):
 
 class PositionalEncoding(nn.Module):
 
-    def __init__(self, embed_size=50, max_len=5000):
+    def __init__(self, embed_size, max_len):
         super(PositionalEncoding, self).__init__()
 
         self.embed_size = embed_size
@@ -296,23 +300,29 @@ if __name__ == '__main__':
         config = yaml.safe_load(file)
 
     # Load the torch data
-    X = torch.load('../' + config['Strategy']['LSTM']['data_path_X'])
-    y = torch.load('../' + config['Strategy']['LSTM']['data_path_y'])
+    X = torch.load('../' + config['Strategy']['Transformers']['data_path_X'])
+    y = torch.load('../' + config['Strategy']['Transformers']['data_path_y'])
 
-    save_path = '../' + config['Strategy']['LSTM']['weights_path']
+    save_path = '../' + config['Strategy']['Transformers']['weights_path']
 
-    BATCH_SIZE = config['Strategy']['LSTM']['batch_size']
-    LEARNING_RATE = config['Strategy']['LSTM']['learning_rate']
-    NB_EPOCHS = config['Strategy']['LSTM']['nb_epochs']
-    INPUT_SIZE = config['Strategy']['LSTM']['input_size']
-    LOAD_WEIGHTS = config['Strategy']['LSTM']['load_weights']
-    HIDDEN_SIZE = config['Strategy']['LSTM']['hidden_size']
-    NUM_LAYERS = config['Strategy']['LSTM']['num_layers']
-    DROPOUT = config['Strategy']['LSTM']['dropout']
+    LOAD_WEIGHTS = config['Strategy']['Transformers']['load_weights']
+    BATCH_SIZE = config['Strategy']['Transformers']['batch_size']
+    LEARNING_RATE = config['Strategy']['Transformers']['learning_rate']
+    NB_EPOCHS = config['Strategy']['Transformers']['nb_epochs']
+
+    EMBEDDING_SIZE = config['Strategy']['Transformers']['embedding_size']
+    KERNEL_SIZE = config['Strategy']['Transformers']['kernel_size']
+    NB_HEADS = config['Strategy']['Transformers']['nb_heads']
+    FORWARD_EXPANSION = config['Strategy']['Transformers']['forward_expansion']
+    FORWARD_EXPANSION_DECODER = config['Strategy']['Transformers']['forward_expansion_decoder']
+    MAX_LEN = config['Strategy']['Transformers']['max_len']
+
+    DROPOUT = config['Strategy']['Transformers']['dropout']
+    NORMALIZE = config['Strategy']['Transformers']['normalize']
 
     DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
 
-    MODEL_NAME = f"LSTM_IS_{INPUT_SIZE}_HS_{HIDDEN_SIZE}_NL_{NUM_LAYERS}_DO_{DROPOUT}"
+    MODEL_NAME = f"Transformers_ES_{EMBEDDING_SIZE}_KS_{KERNEL_SIZE}_NH_{NB_HEADS}_FE_{FORWARD_EXPANSION}"
 
     # Split the data
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
@@ -320,8 +330,20 @@ if __name__ == '__main__':
     X_train = X_train.unsqueeze(2)
     X_test = X_test.unsqueeze(2)
 
-    model = LSTM(input_size=INPUT_SIZE, hidden_size=HIDDEN_SIZE, num_layers=NUM_LAYERS, fc_out=y_train.shape[1],
-                 dropout=DROPOUT, device=DEVICE).to(DEVICE)
+    model = TimeSeriesTransformerForecaster(
+        embedding_size=EMBEDDING_SIZE,
+        kernel_size=KERNEL_SIZE,
+        nb_heads=NB_HEADS,
+        forward_expansion=FORWARD_EXPANSION,
+        forward_expansion_decoder=FORWARD_EXPANSION_DECODER,
+        max_len=MAX_LEN,
+        fc_out=y_train.shape[1],
+        dropout=DROPOUT,
+        normalize=NORMALIZE,
+        path_weight_save=save_path,
+        path_loss_save=save_path,
+        device=DEVICE
+    ).to(DEVICE)
 
     if LOAD_WEIGHTS:
         try:
