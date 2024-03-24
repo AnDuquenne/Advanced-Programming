@@ -126,7 +126,7 @@ class DataCleaner:
             torch.save(X_torch, self.save_neural_path + file.replace('.csv', '_X.pt'))
             torch.save(y_torch, self.save_neural_path + file.replace('.csv', '_y.pt'))
 
-    def prepare_dataframe_transformers(self, window, look_forward=1, log_returns=False):
+    def prepare_dataframe_transformers(self, window, look_forward=1, log_close=False, only_close=False):
         assert look_forward < window, "The look_forward parameter must be less than the window parameter."
 
         for file in tqdm(self.files):
@@ -136,13 +136,16 @@ class DataCleaner:
 
             df_numpy = dc(df).to_numpy()
 
-            if log_returns:
+            if log_close:
                 # Transform the closing prices to log returns
-                df_numpy[1:, 0] = np.diff(np.log(df_numpy[:, 0]))
+                df_numpy[:, 0] = np.log(df_numpy[:, 0])
 
-            # Minmaxscaler to scale the data expect the "Close" column
-            scaler = MinMaxScaler(feature_range=(-1, 1))
-            df_numpy[1:, :] = scaler.fit_transform(df_numpy[1:, :])
+            # # Minmaxscaler to scale the data expect the "Close" column
+            # scaler = MinMaxScaler(feature_range=(-1, 1))
+            # df_numpy[1:, :] = scaler.fit_transform(df_numpy[1:, :])
+
+            if only_close:
+                df_numpy = df_numpy[:, 0].reshape(-1, 1)
 
             # Remove first row
             df_numpy = df_numpy[1:, :]
@@ -158,8 +161,8 @@ class DataCleaner:
                 numpy_windowed_data[i, :, :] = df_numpy[:, i:i+window]
 
             # Create the torch tensors, for y we keep only the feature "Close"
-            X_torch = torch.tensor(numpy_windowed_data[:-look_forward, :, :])
-            y_torch = torch.tensor(numpy_windowed_data[look_forward:, 0, :])
+            X_torch = torch.tensor(numpy_windowed_data[:-look_forward, :, :]).transpose(1, 2)
+            y_torch = torch.tensor(numpy_windowed_data[look_forward:, 0, :]).transpose(1, 2)
 
             # For DEBUG view
             # test_X = pd.DataFrame(dc(X_torch[35, :, :]).numpy())
@@ -176,6 +179,6 @@ if __name__ == '__main__':
         config = yaml.safe_load(file)
 
     # Clean the data
-    cleaner = DataCleaner('BTC', 'io/config.yaml')
+    cleaner = DataCleaner('ETH', 'io/config.yaml')
     # cleaner.clean_data()
-    cleaner.prepare_dataframe_transformers(10, 3, log_returns=True)
+    cleaner.prepare_dataframe_transformers(10, 1, log_close=False, only_close=True)

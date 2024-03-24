@@ -13,11 +13,52 @@ import yaml
 
 from tqdm import tqdm
 
+from utils.trainer import Trainer
+
 from torch.utils.data import Dataset, DataLoader
 
 from sklearn.model_selection import train_test_split
 
 from utils.utils import print_size, print_underlined
+
+# Load the configuration file
+with open('../io/config.yaml', 'r') as file:
+    config = yaml.safe_load(file)
+
+# ------------------------------------------------------------------------ #
+#                             Load the parameters                          #
+# ------------------------------------------------------------------------ #
+
+# Load the torch data
+X = torch.load('../' + config['Strategy']['Transformers']['data_path_X'])
+y = torch.load('../' + config['Strategy']['Transformers']['data_path_y'])
+
+save_path_weights = '../' + config['Strategy']['Transformers']['weights_path']
+save_path_loss = '../' + config['Strategy']['Transformers']['loss_path']
+
+DEBUG = config['Strategy']['Transformers']['debug']
+DEBUG_NAME = config['Strategy']['Transformers']['debug_name']
+
+LOAD_WEIGHTS = config['Strategy']['Transformers']['load_weights']
+BATCH_SIZE = config['Strategy']['Transformers']['batch_size']
+LEARNING_RATE = config['Strategy']['Transformers']['learning_rate']
+NB_EPOCHS = config['Strategy']['Transformers']['nb_epochs']
+
+EMBEDDING_SIZE = config['Strategy']['Transformers']['embedding_size']
+KERNEL_SIZE = config['Strategy']['Transformers']['kernel_size']
+NB_HEADS = config['Strategy']['Transformers']['nb_heads']
+NB_LAYERS = config['Strategy']['Transformers']['nb_encoder_layers']
+FORWARD_EXPANSION = config['Strategy']['Transformers']['forward_expansion']
+FORWARD_EXPANSION_DECODER = config['Strategy']['Transformers']['forward_expansion_decoder']
+MAX_LEN = config['Strategy']['Transformers']['max_len']
+PADDING = config['Strategy']['Transformers']['padding']
+
+DROPOUT = config['Strategy']['Transformers']['dropout']
+NORMALIZE = config['Strategy']['Transformers']['normalize']
+
+DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
+
+MODEL_NAME = f"Transformers_ES_{EMBEDDING_SIZE}_NH_{NB_HEADS}_FE_{FORWARD_EXPANSION}_NBL_{NB_LAYERS}"
 
 
 class TimeSeriesDataframe(Dataset):
@@ -74,7 +115,7 @@ class TimeSeriesTransformerForecaster(nn.Module):
         self.EXPANSION = expansion
 
         # 1. Embedding
-        self.embedding_conv = nn.ConvTranspose1d(in_channels=8,
+        self.embedding_conv = nn.ConvTranspose1d(in_channels=self.N_FEATURES,
                                                  out_channels=self.EMBEDDING_SIZE,
                                                  kernel_size=self.KERNEL_SIZE,
                                                  stride=1,
@@ -96,7 +137,18 @@ class TimeSeriesTransformerForecaster(nn.Module):
 
         self.fc_decoder_3 = nn.Linear(self.EMBEDDING_SIZE, 1)
 
-        # TODO Initialize the weights
+        self.init_weights()
+
+    def init_weights(self):
+        init_range = 0.1
+        self.fc_decoder_1.bias.data.zero_()
+        self.fc_decoder_1.weight.data.uniform_(-init_range, init_range)
+
+        self.fc_decoder_2.bias.data.zero_()
+        self.fc_decoder_2.weight.data.uniform_(-init_range, init_range)
+
+        self.fc_decoder_3.bias.data.zero_()
+        self.fc_decoder_3.weight.data.uniform_(-init_range, init_range)
 
     def forward(self, x):
         l_out = (x.size(0) - 1) * self.STRIDE - 2 * self.PADDING + self.KERNEL_SIZE
@@ -172,41 +224,13 @@ class PositionalEncoding(nn.Module):
         return self.dropout(x + self.pe[:x.size(0), :])
 
 
+
+
 if __name__ == '__main__':
-    # Load the configuration file
-    with open('../io/config.yaml', 'r') as file:
-        config = yaml.safe_load(file)
 
-    # Load the torch data
-    X = torch.load('../' + config['Strategy']['Transformers']['data_path_X'])
-    y = torch.load('../' + config['Strategy']['Transformers']['data_path_y'])
-
-    save_path_weights = '../' + config['Strategy']['Transformers']['weights_path']
-    save_path_loss = '../' + config['Strategy']['Transformers']['loss_path']
-
-    DEBUG = config['Strategy']['Transformers']['debug']
-    DEBUG_NAME = config['Strategy']['Transformers']['debug_name']
-
-    LOAD_WEIGHTS = config['Strategy']['Transformers']['load_weights']
-    BATCH_SIZE = config['Strategy']['Transformers']['batch_size']
-    LEARNING_RATE = config['Strategy']['Transformers']['learning_rate']
-    NB_EPOCHS = config['Strategy']['Transformers']['nb_epochs']
-
-    EMBEDDING_SIZE = config['Strategy']['Transformers']['embedding_size']
-    KERNEL_SIZE = config['Strategy']['Transformers']['kernel_size']
-    NB_HEADS = config['Strategy']['Transformers']['nb_heads']
-    NB_LAYERS = config['Strategy']['Transformers']['nb_encoder_layers']
-    FORWARD_EXPANSION = config['Strategy']['Transformers']['forward_expansion']
-    FORWARD_EXPANSION_DECODER = config['Strategy']['Transformers']['forward_expansion_decoder']
-    MAX_LEN = config['Strategy']['Transformers']['max_len']
-    PADDING = config['Strategy']['Transformers']['padding']
-
-    DROPOUT = config['Strategy']['Transformers']['dropout']
-    NORMALIZE = config['Strategy']['Transformers']['normalize']
-
-    DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
-
-    MODEL_NAME = f"Transformers_ES_{EMBEDDING_SIZE}_NH_{NB_HEADS}_FE_{FORWARD_EXPANSION}_NBL_{NB_LAYERS}"
+    # ------------------------------------------------------------------------ #
+    #                               Load the data                              #
+    # ------------------------------------------------------------------------ #
 
     # Split the data
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
@@ -235,6 +259,10 @@ if __name__ == '__main__':
             X_test = X_test.rename(None)
             y_test = y_test.rename(None)
 
+    # ------------------------------------------------------------------------ #
+    #                               Define training                            #
+    # ------------------------------------------------------------------------ #
+
     model = TimeSeriesTransformerForecaster(
         n_features=X_train.size(1),
         embedding_size=EMBEDDING_SIZE,
@@ -261,105 +289,19 @@ if __name__ == '__main__':
     criterion = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
 
-    # Initialize the loss history
-    epoch_train_loss = np.zeros((NB_EPOCHS, 1))
-    epoch_test_loss = np.zeros((NB_EPOCHS, 1))
+    # ------------------------------------------------------------------------ #
+    #                              Train and test                              #
+    # ------------------------------------------------------------------------ #
 
-    for i in tqdm(range(0, NB_EPOCHS)):
+    trainer = Trainer(train_loader, test_loader, model, optimizer, criterion, DEVICE, NB_EPOCHS,
+                      save_path_loss, save_path_weights, MODEL_NAME)
 
-        # Initialize the loss for each epoch
-        tmp_train_loss = np.zeros((len(train_loader), 1))
-        tmp_test_loss = np.zeros((len(test_loader), 1))
+    trainer.train()
 
-        for idx, (signal, target) in enumerate(train_loader):
-
-            # Set the model to train mode
-            model.train()
-
-            # We want [window, batch_size, features]
-            signal = signal.permute(2, 0, 1)
-            target = target.permute(2, 0, 1)
-
-            signal = signal.float()
-            target = target.float()
-
-            # Move the data to the device
-            signal = signal.to(DEVICE)
-            target = target.to(DEVICE)
-
-            # Reset grad
-            optimizer.zero_grad()
-            # Make predictions
-            preds = model(signal.to(DEVICE))
-
-            if DEBUG:
-                print_underlined("Data in the training loop (Coming from the dataloader)")
-                if DEBUG_NAME:
-                    signal.names = ['batch_size', 'features', 'one_dim']
-                    preds.names = ['batch_size', 'features', 'output_size']
-                    target.names = ['batch_size', 'output_size']
-
-                print_size("signal", signal)
-                print_size("preds", preds)
-                print_size("target", target)
-
-                if DEBUG_NAME:
-                    signal = signal.rename(None)
-                    preds = preds.rename(None)
-                    target = target.rename(None)
-
-            loss = criterion(preds, target)
-            loss.backward()
-            optimizer.step()
-
-            tmp_train_loss[idx] = np.mean(loss.cpu().detach().item())
-
-            tmp_test_loss_ = np.zeros((len(test_loader), 1))
-
-        model.eval()
-        with torch.no_grad():
-            for idx, (signal, target) in enumerate(test_loader):
-                # We want [window, batch_size, features]
-                signal = signal.permute(2, 0, 1)
-                target = target.permute(2, 0, 1)
-
-                signal = signal.float()
-                target = target.float()
-
-                signal = signal.to(DEVICE)
-                target = target.to(DEVICE)
-
-                preds = model(signal.to(DEVICE))
-
-                if idx == i:
-                    print(preds.cpu().detach().size())
-                    print(signal.cpu().detach().size())
-                    print(target.cpu().detach().size())
-                    plt.plot(preds[:, idx, :].cpu().detach().numpy(), color='red')
-                    plt.plot(signal[:, idx, 0].cpu().detach().numpy(), color='green')
-                    plt.plot(target[:, idx, :].cpu().detach().numpy(), color='blue')
-                    plt.show()
-
-                loss = criterion(preds, target)
-
-                tmp_test_loss[idx] = np.mean(loss.cpu().detach().item())
-
-        epoch_train_loss[i] = np.mean(tmp_train_loss)
-        epoch_test_loss[i] = np.mean(tmp_test_loss)
-
-    # Save the model
-    torch.save(model.state_dict(), save_path_weights + MODEL_NAME + ".pt")
-
-    # save the loss
-    np.save(save_path_loss + MODEL_NAME + "_train_loss.npy", epoch_train_loss)
-    np.save(save_path_loss + MODEL_NAME + "_test_loss.npy", epoch_test_loss)
-
-    # Plot the loss
-    plt.plot(epoch_train_loss, label='Training Loss')
-    plt.plot(epoch_test_loss, label='Test Loss')
-    # Add grid
-    plt.grid()
-    plt.legend()
-    # save the plot
-    plt.savefig(save_path_loss + MODEL_NAME + ".png")
-    plt.show()
+    # # Load the loss
+    # train_loss_ = np.load("io/Transformers/Losses/Transformers_ES_200_NH_10_FE_4_NBL_8_train_loss.npy")
+    # test_loss_ = np.load("io/Transformers/Losses/Transformers_ES_200_NH_10_FE_4_NBL_8_test_loss.npy")
+    # # Plot the loss
+    # plt.plot(test_loss_)
+    # plt.plot(train_loss_)
+    # plt.show()
