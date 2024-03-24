@@ -39,34 +39,79 @@ class TimeSeriesDataframe(Dataset):
 
 
 class TimeSeriesTransformerForecaster(nn.Module):
+    """
+    A class to create a transformer model for time series forecasting.
 
-    def __init__(self, feature_size=200, num_layers=8, expansion=4, dropout=0.1, nhead=10, debug=False):
+    1. nn.ConvTranspose1d
+    ------------
+
+    Convolution for  embedding
+    [batch_size, in_channels, signal_length] -> [batch_size, out_channels, signal_length_out]
+    with L_out = (L_in - 1) * stride - 2 * padding + kernel_size (dilation = 1, output_padding = 0)
+    """
+
+    def __init__(self,
+                 n_features,
+                 embedding_size=200,
+                 num_layers=8,
+                 expansion=4,
+                 dropout=0.1,
+                 kernel_size=5,
+                 padding=25,
+                 nhead=10,
+                 debug=False):
         super(TimeSeriesTransformerForecaster, self).__init__()
 
         self.DROPOUT = dropout
+        self.N_FEATURES = n_features
         self.NHEAD = nhead
         self.NUM_LAYERS = num_layers
         self.DEBUG = debug
+        self.KERNEL_SIZE = kernel_size
+        self.STRIDE = 1
+        self.EMBEDDING_SIZE = embedding_size
+        self.PADDING = padding
         self.EXPANSION = expansion
 
-        self.pos_encoder = PositionalEncoding(d_model=feature_size, dropout=self.DROPOUT, debug=self.DEBUG)
+        # 1. Embedding
+        self.embedding_conv = nn.ConvTranspose1d(in_channels=8,
+                                                 out_channels=self.EMBEDDING_SIZE,
+                                                 kernel_size=self.KERNEL_SIZE,
+                                                 stride=1,
+                                                 padding=self.PADDING,
+                                                 bias=False)
+
+        self.pos_encoder = PositionalEncoding(d_model=self.EMBEDDING_SIZE, dropout=self.DROPOUT, debug=self.DEBUG)
 
         self.transformer_encoder = nn.TransformerEncoder(
-            nn.TransformerEncoderLayer(d_model=feature_size, nhead=self.NHEAD, dropout=self.DROPOUT),
+            nn.TransformerEncoderLayer(d_model=self.EMBEDDING_SIZE, nhead=self.NHEAD, dropout=self.DROPOUT),
             num_layers=self.NUM_LAYERS
         )
 
-        self.fc_decoder_1 = nn.Linear(feature_size, feature_size * self.EXPANSION)
+        self.fc_decoder_1 = nn.Linear(self.EMBEDDING_SIZE, self.EMBEDDING_SIZE * self.EXPANSION)
         self.re1 = nn.ReLU()
 
-        self.fc_decoder_2 = nn.Linear(feature_size * self.EXPANSION, feature_size)
+        self.fc_decoder_2 = nn.Linear(self.EMBEDDING_SIZE * self.EXPANSION, self.EMBEDDING_SIZE)
         self.re2 = nn.ReLU()
 
-        self.fc_decoder_3 = nn.Linear(feature_size, 1)
+        self.fc_decoder_3 = nn.Linear(self.EMBEDDING_SIZE, 1)
 
         # TODO Initialize the weights
 
     def forward(self, x):
+        l_out = (x.size(0) - 1) * self.STRIDE - 2 * self.PADDING + self.KERNEL_SIZE
+
+        assert l_out == x.size(0), "L_out must match the input signal size."
+
+        # Need [batch_size, channels_in, signal_length]
+        # [Signal_length, Batch_size, Features] -> [Batch_size, Features, Signal_length]
+        x = x.permute(1, 2, 0)
+
+        x = self.embedding_conv(x)
+
+        # Need [signal_length, batch_size, features]
+        # [Batch_size, Channels_out=features, Signal_length] -> [Signal_length, Batch_size, Features]
+        x = x.permute(2, 0, 1)
 
         x = self.pos_encoder(x)
 
@@ -154,6 +199,7 @@ if __name__ == '__main__':
     FORWARD_EXPANSION = config['Strategy']['Transformers']['forward_expansion']
     FORWARD_EXPANSION_DECODER = config['Strategy']['Transformers']['forward_expansion_decoder']
     MAX_LEN = config['Strategy']['Transformers']['max_len']
+    PADDING = config['Strategy']['Transformers']['padding']
 
     DROPOUT = config['Strategy']['Transformers']['dropout']
     NORMALIZE = config['Strategy']['Transformers']['normalize']
@@ -190,12 +236,15 @@ if __name__ == '__main__':
             y_test = y_test.rename(None)
 
     model = TimeSeriesTransformerForecaster(
-        feature_size=EMBEDDING_SIZE,
+        n_features=X_train.size(1),
+        embedding_size=EMBEDDING_SIZE,
         num_layers=NB_LAYERS,
         dropout=DROPOUT,
         nhead=NB_HEADS,
         expansion=FORWARD_EXPANSION,
-        debug=DEBUG
+        debug=DEBUG,
+        padding=PADDING,
+        kernel_size=KERNEL_SIZE
     ).to(DEVICE)
 
     if LOAD_WEIGHTS:

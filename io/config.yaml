@@ -34,9 +34,10 @@ Strategy:
     batch_size: 512
     learning_rate: 0.001
     nb_epochs: 500
-    embedding_size: 8
-    kernel_size: 3
-    nb_heads: 4
+    embedding_size: 200
+    kernel_size: 5
+    nb_heads: 10
+    padding: 2
     nb_encoder_layers: 8
     forward_expansion: 4
     forward_expansion_decoder: 4
