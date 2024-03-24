@@ -17,6 +17,8 @@ from torch.utils.data import Dataset, DataLoader
 
 from sklearn.model_selection import train_test_split
 
+from utils.utils import print_size, print_underlined
+
 
 class TimeSeriesDataframe(Dataset):
     """
@@ -38,275 +40,92 @@ class TimeSeriesDataframe(Dataset):
 
 class TimeSeriesTransformerForecaster(nn.Module):
 
-    def __init__(self,
-                 embedding_size,
-                 kernel_size,
-                 nb_heads,
-                 forward_expansion,
-                 forward_expansion_decoder,
-                 max_len,
-                 fc_out,
-                 dropout,
-                 normalize,
-                 path_weight_save,
-                 path_loss_save,
-                 device='cuda:0'):
-
+    def __init__(self, feature_size=200, num_layers=8, expansion=4, dropout=0.1, nhead=10, debug=False):
         super(TimeSeriesTransformerForecaster, self).__init__()
 
-        self.embedding_size = embedding_size
-        self.kernel_size = kernel_size
-        self.nb_heads = nb_heads
-        self.forward_expansion = forward_expansion
-        self.forward_expansion_decoder = forward_expansion_decoder
-        self.max_len = max_len
-        self.fc_out = fc_out
-        self.dropout = dropout
-        self.normalize = normalize
-        self.device = device
+        self.DROPOUT = dropout
+        self.NHEAD = nhead
+        self.NUM_LAYERS = num_layers
+        self.DEBUG = debug
+        self.EXPANSION = expansion
 
-        self.path_weight_save = path_weight_save
-        self.path_loss_save = path_loss_save
+        self.pos_encoder = PositionalEncoding(d_model=feature_size, dropout=self.DROPOUT, debug=self.DEBUG)
 
-        # Convolution for signal embedding
-        self.embed_conv = nn.Conv1d(in_channels=1,
-                                    out_channels=self.embedding_size,
-                                    kernel_size=self.kernel_size,
-                                    stride=1,
-                                    padding=5,
-                                    bias=False)
+        self.transformer_encoder = nn.TransformerEncoder(
+            nn.TransformerEncoderLayer(d_model=feature_size, nhead=self.NHEAD, dropout=self.DROPOUT),
+            num_layers=self.NUM_LAYERS
+        )
 
-        # Instance normalization
-        self.istance_norm = nn.InstanceNorm2d(num_features=self.embedding_size, affine=True)
-        # Positional encoding
-        self.pos_encoding = PositionalEncoding(self.embedding_size, self.max_len)
-        # Dropout on embedding and positional encoding
-        self.dropout_layer = nn.Dropout(self.dropout)
-
-        self.bk1 = TransformerBlock(self.embedding_size, self.nb_heads,
-                                    self.forward_expansion, self.dropout)
-        self.bk2 = TransformerBlock(self.embedding_size, self.nb_heads,
-                                    self.forward_expansion, self.dropout)
-        self.bk3 = TransformerBlock(self.embedding_size, self.nb_heads,
-                                    self.forward_expansion, self.dropout)
-        self.bk4 = TransformerBlock(self.embedding_size, self.nb_heads,
-                                    self.forward_expansion, self.dropout)
-
-        self.dec_fc1 = nn.Linear(self.embedding_size, self.embedding_size * self.forward_expansion_decoder)
+        self.fc_decoder_1 = nn.Linear(feature_size, feature_size * self.EXPANSION)
         self.re1 = nn.ReLU()
 
-        self.dec_fc2 = nn.Linear(self.embedding_size * self.forward_expansion_decoder,
-                                 self.embedding_size * self.forward_expansion_decoder)
+        self.fc_decoder_2 = nn.Linear(feature_size * self.EXPANSION, feature_size)
         self.re2 = nn.ReLU()
 
-        self.dec_fc3 = nn.Linear(self.embedding_size * self.forward_expansion_decoder, self.embedding_size)
-        self.re3 = nn.ReLU()
+        self.fc_decoder_3 = nn.Linear(feature_size, 1)
 
-        self.dec_fc4 = nn.Linear(self.embedding_size, self.fc_out)
-
-        # Softmax for the end
-        self.sm = nn.Softmax(dim=2)
+        # TODO Initialize the weights
 
     def forward(self, x):
 
-        # Normalization
-        if self.normalize:
-            x = nn.functional.normalize(x, dim=1)
+        x = self.pos_encoder(x)
 
-        beat_size = x.size(1)
-        # Adapt the shape for conv1D
-        x = torch.reshape(x, (x.size(0), 1, x.size(1)))
-        # Build embedding form of signals using conv layer
-        out = self.embed_conv(x)
-        out = out[:, :, 0:beat_size]
+        x = self.transformer_encoder(x)
 
-        # Add the positional encoding
-        out = self.pos_encoding(out)
+        x = self.re1(self.fc_decoder_1(x))
 
-        # Transpose last two dim to have embedding on the last dim
-        out.transpose_(1, 2)
+        x = self.re2(self.fc_decoder_2(x))
 
-        # First encoders
-        out = self.bk1(out, out, out, mask=None)
-        out = self.bk2(out, out, out, mask=None)
-        out = self.bk3(out, out, out, mask=None)
-        out = self.bk4(out, out, out, mask=None)
+        x = self.fc_decoder_3(x)
 
-        # Decoder part
-        out = self.re1(self.dec_fc1(out))
-        out = self.re2(self.dec_fc2(out))
-        out = self.re3(self.dec_fc3(out))
-        out = torch.sigmoid(self.dec_fc4(out))
-
-        return out
-
-
-class SelfAttention(nn.Module):
-    """
-    The self attention module
-    """
-    def __init__(self, embed_size=5, nb_heads=5):
-        """
-        :param embed_size: This size is the kernel size of the embedding
-        convolutional layer.
-        :param nb_heads: The number of heads in the self attention process
-        """
-        super(SelfAttention, self).__init__()
-
-        self.embed_size = embed_size
-        # WARNING: the embed_size have to be a multiple of the number of heads
-        self.nb_heads = nb_heads
-        self.heads_dim = int(embed_size / nb_heads)
-
-        # Layer to generate the values matrix
-        self.fc_values = nn.Linear(self.heads_dim, self.heads_dim, bias=False)
-        # Layer to generate keys
-        self.fc_keys = nn.Linear(self.heads_dim, self.heads_dim, bias=False)
-        # Layer for Queries
-        self.fc_queries = nn.Linear(self.heads_dim, self.heads_dim, bias=False)
-
-        # A fully connected layer to concatenate results
-        self.fc_concat = nn.Linear(self.nb_heads * self.heads_dim, embed_size)
-
-        # The softmax step
-        self.sm = nn.Softmax(dim=3)
-
-    def forward(self, values, keys, query, mask=None):
-
-        # Get the number of training samples
-        n = query.shape[0]
-        # Get original shapes
-        v_len = values.size()[1]
-        k_len = keys.size()[1]
-        q_len = keys.size()[1]
-
-        # Split embedded inputs into the number of heads
-        v = values.view(n, v_len, self.nb_heads, self.heads_dim)
-        k = keys.view(n, k_len, self.nb_heads, self.heads_dim)
-        q = query.view(n, q_len, self.nb_heads, self.heads_dim)
-
-        # Feed it in appropriate layer
-        v = self.fc_values(v)
-        k = self.fc_keys(k)
-        q = self.fc_queries(q)
-
-        # Matrix dot product between queries and keys
-        prdc = torch.einsum('nqhd,nkhd->nhqk', [q, k])
-
-        # Apply mask if present
-        if mask is not None:
-            prdc = prdc.masked_fill(mask == 0, float('-1e20'))  # don't use zero
-
-        # The softmax step
-        #attention = self.sm(prdc / (self.embed_size ** (1/2)))
-        attention = torch.softmax(prdc / (self.embed_size ** (1 / 2)), dim=3)
-
-        # Product with values
-        # Output shape: (n, query len, heads, head_dim
-        out = torch.einsum('nhql,nlhd->nqhd', [attention, v])
-
-        # Concatenate heads results (n x query len x embed_size)
-        out = torch.reshape(out, (n, q_len, self.nb_heads * self.heads_dim))
-
-        # Feed the last layer
-        return self.fc_concat(out)
-
-
-class TransformerBlock(nn.Module):
-
-    def __init__(self, embed_size=50, nb_heads=5, forward_expansion=4, dropout=0.1):
-        super(TransformerBlock, self).__init__()
-
-        # The self attention element
-        self.attention = SelfAttention(embed_size, nb_heads)
-
-        # The first normalization after attention block
-        self.norm_A = nn.LayerNorm(embed_size)
-
-        # The feed forward part
-        self.feed = nn.Sequential(
-            nn.Linear(embed_size, forward_expansion * embed_size),
-            nn.ReLU(),
-            nn.Linear(forward_expansion * embed_size, embed_size)
-        )
-
-        # The second normalization
-        self.norm_B = nn.LayerNorm(embed_size)
-
-        # A batch normalization instead of the classical dropout
-        #self.bn = nn.BatchNorm1d(embed_size)
-
-        # Or a classical dropout to avoid overfitting
-        self.dropout = nn.Dropout(p=dropout)
-
-    def forward(self, v, k, q, mask=None):
-
-        # The attention process
-        out = self.attention(v, k, q, mask)
-
-        # The first normalization after attention + skip connection
-        out = self.norm_A(out + q)
-
-        # A batch normalization instead of the classical dropout
-        #out = self.bn(out)
-
-        # The feed forward part
-        fw = self.feed(out)
-
-        # The second normalization + skip connection
-        out = self.norm_B(fw + out)
-
-        # An other batch normalization
-        #out = self.bn(out)
-
-        # Dropout
-        out = self.dropout(out)
-
-        return out
+        return x
 
 
 class PositionalEncoding(nn.Module):
+    """
+    Positional encoding for the transformer model.
+    d_model is the embedding size.
+    """
 
-    def __init__(self, embedding_size, max_len):
+    def __init__(self, d_model, max_len=1000, dropout=0.1, debug=False, debug_name=False):
         super(PositionalEncoding, self).__init__()
-        
-        assert embedding_size % 2 == 0, "Embedding size must be even"
 
-        self.embedding_size = embedding_size
+        assert d_model % 2 == 0, "Embedding size must be even"
+
+        self.d_model = d_model
         self.max_len = max_len
 
-        position = torch.arange(self.max_len).unsqueeze(1)
-        div_term = torch.exp(torch.arange(0, self.embedding_size, 2) * -(math.log(10000.0) / self.embedding_size))
-        pe = torch.zeros(self.max_len, self.embedding_size)
+        self.DEBUG = debug
+        self.DEBUG_NAME = debug_name
+        self.DROPOUT = dropout
+
+        self.dropout = nn.Dropout(self.DROPOUT)
+
+        pe = torch.zeros(max_len, d_model)
+        position = torch.arange(0, max_len, dtype=torch.float).unsqueeze(1)
+        div_term = torch.exp(torch.arange(0, d_model, 2).float() * (-math.log(10000.0) / d_model))
         pe[:, 0::2] = torch.sin(position * div_term)
         pe[:, 1::2] = torch.cos(position * div_term)
-
-        # Add a batch dimension (TxD) -> (1xTxD)
-        # And change the shape to (1xTxD) -> (1xDxT)
-        pe = pe.unsqueeze(0).transpose(1, 2)
+        pe = pe.unsqueeze(1)
         self.register_buffer('pe', pe)
 
     def forward(self, x):
-        '''
-        Add the positional encoding to the input
 
-        x = Batch size x Sequence size x Embedding size
-        pe = 1 x Sequence size max x Embedding size
+        assert x.size(0) <= self.max_len, "The input size is not correct"
 
-        :param x:
-        :return:
-        '''
-        # Get seq size
-        seq_len = x.size(1)
+        if self.DEBUG:
 
-        # change the shape of the
+            print_underlined("Positional encoding")
+            if self.DEBUG_NAME:
+                x.names = ['batch_size', 'embedding_size', 'features']
+                self.pe.names = ['batch_size', 'features', 'one_dim']
+            print_size("x", x)
+            print_size("pe", self.pe)
+            print_size("pe_resized", self.pe[:x.size(0), :])
+            print_size("x + pe_resized", x + self.pe[:x.size(0), :])
 
-        # Add positional embedding
-        print("\n", x.size())
-        print(self.pe.size())
-        print(self.pe[:, :, :x.size(2)].size())
-        x = x + self.pe[:, :, :x.size(2)].to('cuda:0')
-        return x
+        return self.dropout(x + self.pe[:x.size(0), :])
+
 
 if __name__ == '__main__':
     # Load the configuration file
@@ -317,7 +136,11 @@ if __name__ == '__main__':
     X = torch.load('../' + config['Strategy']['Transformers']['data_path_X'])
     y = torch.load('../' + config['Strategy']['Transformers']['data_path_y'])
 
-    save_path = '../' + config['Strategy']['Transformers']['weights_path']
+    save_path_weights = '../' + config['Strategy']['Transformers']['weights_path']
+    save_path_loss = '../' + config['Strategy']['Transformers']['loss_path']
+
+    DEBUG = config['Strategy']['Transformers']['debug']
+    DEBUG_NAME = config['Strategy']['Transformers']['debug_name']
 
     LOAD_WEIGHTS = config['Strategy']['Transformers']['load_weights']
     BATCH_SIZE = config['Strategy']['Transformers']['batch_size']
@@ -327,6 +150,7 @@ if __name__ == '__main__':
     EMBEDDING_SIZE = config['Strategy']['Transformers']['embedding_size']
     KERNEL_SIZE = config['Strategy']['Transformers']['kernel_size']
     NB_HEADS = config['Strategy']['Transformers']['nb_heads']
+    NB_LAYERS = config['Strategy']['Transformers']['nb_encoder_layers']
     FORWARD_EXPANSION = config['Strategy']['Transformers']['forward_expansion']
     FORWARD_EXPANSION_DECODER = config['Strategy']['Transformers']['forward_expansion_decoder']
     MAX_LEN = config['Strategy']['Transformers']['max_len']
@@ -336,53 +160,81 @@ if __name__ == '__main__':
 
     DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
 
-    MODEL_NAME = f"Transformers_ES_{EMBEDDING_SIZE}_KS_{KERNEL_SIZE}_NH_{NB_HEADS}_FE_{FORWARD_EXPANSION}"
+    MODEL_NAME = f"Transformers_ES_{EMBEDDING_SIZE}_NH_{NB_HEADS}_FE_{FORWARD_EXPANSION}_NBL_{NB_LAYERS}"
 
     # Split the data
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-    X_train = X_train.unsqueeze(2)
-    X_test = X_test.unsqueeze(2)
+    y_train = y_train.unsqueeze(1)
+    y_test = y_test.unsqueeze(1)
+
+    if DEBUG:
+        # Name the dimensions
+        print_underlined("\n Data recovered from the folder")
+
+        if DEBUG_NAME:
+            X_train.names = ['n_observations', 'features', 'one_dim']
+            y_train.names = ['n_observations', 'features']
+            X_test.names = ['n_observations', 'features', 'one_dim']
+            y_test.names = ['n_observations', 'features']
+
+        print_size("X_train", X_train)
+        print_size("y_train", y_train)
+        print_size("X_test", X_test)
+        print_size("y_test", y_test)
+
+        if DEBUG_NAME:
+            X_train = X_train.rename(None)
+            y_train = y_train.rename(None)
+            X_test = X_test.rename(None)
+            y_test = y_test.rename(None)
 
     model = TimeSeriesTransformerForecaster(
-        embedding_size=EMBEDDING_SIZE,
-        kernel_size=KERNEL_SIZE,
-        nb_heads=NB_HEADS,
-        forward_expansion=FORWARD_EXPANSION,
-        forward_expansion_decoder=FORWARD_EXPANSION_DECODER,
-        max_len=MAX_LEN,
-        fc_out=y_train.shape[1],
+        feature_size=EMBEDDING_SIZE,
+        num_layers=NB_LAYERS,
         dropout=DROPOUT,
-        normalize=NORMALIZE,
-        path_weight_save=save_path,
-        path_loss_save=save_path,
-        device=DEVICE
+        nhead=NB_HEADS,
+        expansion=FORWARD_EXPANSION,
+        debug=DEBUG
     ).to(DEVICE)
 
     if LOAD_WEIGHTS:
         try:
-            model.load_state_dict(torch.load(save_path + MODEL_NAME + ".pt"))
+            model.load_state_dict(torch.load(save_path_weights + MODEL_NAME + ".pt"))
         except:
             print("No weights found")
 
+    # The data loader
     train_loader = DataLoader(TimeSeriesDataframe(X_train, y_train), batch_size=BATCH_SIZE, shuffle=True)
     test_loader = DataLoader(TimeSeriesDataframe(X_test, y_test), batch_size=BATCH_SIZE, shuffle=False)
 
+    # Define loss and optimizer
     criterion = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
 
+    # Initialize the loss history
     epoch_train_loss = np.zeros((NB_EPOCHS, 1))
     epoch_test_loss = np.zeros((NB_EPOCHS, 1))
 
     for i in tqdm(range(0, NB_EPOCHS)):
 
+        # Initialize the loss for each epoch
         tmp_train_loss = np.zeros((len(train_loader), 1))
         tmp_test_loss = np.zeros((len(test_loader), 1))
 
         for idx, (signal, target) in enumerate(train_loader):
 
+            # Set the model to train mode
             model.train()
 
+            # We want [window, batch_size, features]
+            signal = signal.permute(2, 0, 1)
+            target = target.permute(2, 0, 1)
+
+            signal = signal.float()
+            target = target.float()
+
+            # Move the data to the device
             signal = signal.to(DEVICE)
             target = target.to(DEVICE)
 
@@ -390,6 +242,22 @@ if __name__ == '__main__':
             optimizer.zero_grad()
             # Make predictions
             preds = model(signal.to(DEVICE))
+
+            if DEBUG:
+                print_underlined("Data in the training loop (Coming from the dataloader)")
+                if DEBUG_NAME:
+                    signal.names = ['batch_size', 'features', 'one_dim']
+                    preds.names = ['batch_size', 'features', 'output_size']
+                    target.names = ['batch_size', 'output_size']
+
+                print_size("signal", signal)
+                print_size("preds", preds)
+                print_size("target", target)
+
+                if DEBUG_NAME:
+                    signal = signal.rename(None)
+                    preds = preds.rename(None)
+                    target = target.rename(None)
 
             loss = criterion(preds, target)
             loss.backward()
@@ -402,10 +270,26 @@ if __name__ == '__main__':
         model.eval()
         with torch.no_grad():
             for idx, (signal, target) in enumerate(test_loader):
+                # We want [window, batch_size, features]
+                signal = signal.permute(2, 0, 1)
+                target = target.permute(2, 0, 1)
+
+                signal = signal.float()
+                target = target.float()
+
                 signal = signal.to(DEVICE)
                 target = target.to(DEVICE)
 
                 preds = model(signal.to(DEVICE))
+
+                if idx == i:
+                    print(preds.cpu().detach().size())
+                    print(signal.cpu().detach().size())
+                    print(target.cpu().detach().size())
+                    plt.plot(preds[:, idx, :].cpu().detach().numpy(), color='red')
+                    plt.plot(signal[:, idx, 0].cpu().detach().numpy(), color='green')
+                    plt.plot(target[:, idx, :].cpu().detach().numpy(), color='blue')
+                    plt.show()
 
                 loss = criterion(preds, target)
 
@@ -415,10 +299,18 @@ if __name__ == '__main__':
         epoch_test_loss[i] = np.mean(tmp_test_loss)
 
     # Save the model
-    torch.save(model.state_dict(), save_path + MODEL_NAME + ".pt")
+    torch.save(model.state_dict(), save_path_weights + MODEL_NAME + ".pt")
+
+    # save the loss
+    np.save(save_path_loss + MODEL_NAME + "_train_loss.npy", epoch_train_loss)
+    np.save(save_path_loss + MODEL_NAME + "_test_loss.npy", epoch_test_loss)
 
     # Plot the loss
     plt.plot(epoch_train_loss, label='Training Loss')
     plt.plot(epoch_test_loss, label='Test Loss')
+    # Add grid
+    plt.grid()
     plt.legend()
+    # save the plot
+    plt.savefig(save_path_loss + MODEL_NAME + ".png")
     plt.show()

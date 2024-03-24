@@ -33,7 +33,8 @@ class DataCleaner:
         self.params_path = params_path
         self.load_path = config['data_path'][f'{self.to_load}']['1min']['raw']
         self.save_path = config['data_path'][f'{self.to_load}']['1min']['cleaned']
-        self.save_neural_path = config['data_path'][f'{self.to_load}']['1min']['neural']
+        self.save_neural_path_LSTM = config['data_path'][f'{self.to_load}']['1min']['neural_LSTM']
+        self.save_neural_path_transformers = config['data_path'][f'{self.to_load}']['1min']['neural_transformers']
         self.files = self.get_files()
 
     def get_files(self):
@@ -125,6 +126,49 @@ class DataCleaner:
             torch.save(X_torch, self.save_neural_path + file.replace('.csv', '_X.pt'))
             torch.save(y_torch, self.save_neural_path + file.replace('.csv', '_y.pt'))
 
+    def prepare_dataframe_transformers(self, window, look_forward=1, log_returns=False):
+        assert look_forward < window, "The look_forward parameter must be less than the window parameter."
+
+        for file in tqdm(self.files):
+            df = pd.read_csv(self.save_path + file)
+            df = df[['date', 'close', 'MACD', 'Signal Line', 'Histogram', 'RSI', 'Stochastic RSI', 'DPO', 'CC']]
+            df.set_index('date', inplace=True)
+
+            df_numpy = dc(df).to_numpy()
+
+            if log_returns:
+                # Transform the closing prices to log returns
+                df_numpy[1:, 0] = np.diff(np.log(df_numpy[:, 0]))
+
+            # Minmaxscaler to scale the data expect the "Close" column
+            scaler = MinMaxScaler(feature_range=(-1, 1))
+            df_numpy[1:, :] = scaler.fit_transform(df_numpy[1:, :])
+
+            # Remove first row
+            df_numpy = df_numpy[1:, :]
+
+            # Transpose the numpy array
+            df_numpy = df_numpy.T
+
+            # Create the numpy data array (n_samples, n_features, window)
+            # It contains the original data and the technical indicators
+            numpy_windowed_data = np.zeros((df_numpy.shape[1] - window, df_numpy.shape[0], window))
+
+            for i in range(df_numpy.shape[1] - window):
+                numpy_windowed_data[i, :, :] = df_numpy[:, i:i+window]
+
+            # Create the torch tensors, for y we keep only the feature "Close"
+            X_torch = torch.tensor(numpy_windowed_data[:-look_forward, :, :])
+            y_torch = torch.tensor(numpy_windowed_data[look_forward:, 0, :])
+
+            # For DEBUG view
+            # test_X = pd.DataFrame(dc(X_torch[35, :, :]).numpy())
+            # test_y = pd.DataFrame(dc(y_torch[35, :]).numpy())
+
+            # Save the data as torch tensors
+            torch.save(X_torch, self.save_neural_path_transformers + file.replace('.csv', '_X.pt'))
+            torch.save(y_torch, self.save_neural_path_transformers + file.replace('.csv', '_y.pt'))
+
 
 if __name__ == '__main__':
     # Load the configuration file
@@ -132,6 +176,6 @@ if __name__ == '__main__':
         config = yaml.safe_load(file)
 
     # Clean the data
-    cleaner = DataCleaner('ETH', 'io/config.yaml')
+    cleaner = DataCleaner('BTC', 'io/config.yaml')
     # cleaner.clean_data()
-    cleaner.prepare_dataframe_LSTM(30, 5)
+    cleaner.prepare_dataframe_transformers(10, 3, log_returns=True)
