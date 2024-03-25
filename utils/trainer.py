@@ -91,7 +91,7 @@ class Trainer:
             epoch_train_loss[epoch] = np.mean(tmp_train_loss)
             epoch_test_loss[epoch] = np.mean(tmp_test_loss)
 
-            if self.wandb_:
+            if self.wandb_ and epoch != 0:
                 wandb.log({"train_loss": np.mean(tmp_train_loss)}, step=epoch)
                 wandb.log({"test_loss": np.mean(tmp_test_loss)}, step=epoch)
 

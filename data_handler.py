@@ -126,7 +126,7 @@ class DataCleaner:
             torch.save(X_torch, self.save_neural_path + file.replace('.csv', '_X.pt'))
             torch.save(y_torch, self.save_neural_path + file.replace('.csv', '_y.pt'))
 
-    def prepare_dataframe_transformers(self, window, look_forward=1, log_close=False, only_close=False):
+    def prepare_dataframe_transformers(self, window, look_forward=1, log_close=False, close_returns=False, only_close=False):
         assert look_forward < window, "The look_forward parameter must be less than the window parameter."
 
         for file in tqdm(self.files):
@@ -136,17 +136,22 @@ class DataCleaner:
 
             df_numpy = dc(df).to_numpy()
 
+            # # Normalize the data except the "Close" column
+            # scaler = MinMaxScaler(feature_range=(-1, 1))
+            # df_numpy[:, 1:] = scaler.fit_transform(df_numpy[:, 1:])
+
             if log_close:
-                # Transform the closing prices to log returns
+                # Transform the closing prices to log prices
                 df_numpy[:, 0] = np.log(df_numpy[:, 0])
 
-            # # Minmaxscaler to scale the data expect the "Close" column
-            # scaler = MinMaxScaler(feature_range=(-1, 1))
-            # df_numpy[1:, :] = scaler.fit_transform(df_numpy[1:, :])
+                if close_returns:
+                    # Calculate the returns
+                    df_numpy[:, 0] = np.diff(df_numpy[:, 0], prepend=0)
+                    # Remove the first row
+                    df_numpy = df_numpy[1:, :]
 
             if only_close:
                 df_numpy = df_numpy[:, 0].reshape(-1, 1)
-
 
             # Transpose the numpy array
             df_numpy = df_numpy.T
@@ -182,6 +187,7 @@ if __name__ == '__main__':
         config = yaml.safe_load(file)
 
     # Clean the data
-    cleaner = DataCleaner('ETH', 'io/config.yaml')
+    cleaner = DataCleaner('BTC', 'io/config.yaml')
     # cleaner.clean_data()
-    cleaner.prepare_dataframe_transformers(10, 1, log_close=False, only_close=True)
+    cleaner.prepare_dataframe_transformers(10, 1,
+                                           log_close=True, close_returns=False, only_close=True)
