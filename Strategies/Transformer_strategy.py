@@ -339,7 +339,7 @@ if __name__ == '__main__':
     # ------------------------------------------------------------------------ #
 
     trainer = Trainer(train_loader, test_loader, model, optimizer, criterion, DEVICE, NB_EPOCHS,
-                      save_path_loss, save_path_weights, MODEL_NAME)
+                      save_path_loss, save_path_weights, MODEL_NAME, DEBUG)
 
     trainer.train()
 

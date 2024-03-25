@@ -7,7 +7,7 @@ import wandb
 
 class Trainer:
     def __init__(self, train_loader, test_loader, model, optimizer, criterion, device, n_epoch,
-                 save_path_loss, save_path_weights, model_name):
+                 save_path_loss, save_path_weights, model_name, debug):
 
         # Initialize wandb
         wandb.init(project="stock_forecasting", entity="anduquenne")
@@ -27,6 +27,7 @@ class Trainer:
         self.save_path_weights = save_path_weights
 
         self.name = model_name
+        self.debug = debug
 
     def train(self):
 
@@ -77,9 +78,10 @@ class Trainer:
 
                             preds_test = self.model(signal_test.to(self.device))
 
-                            # print("signal", signal_test[0, :, :].cpu())
-                            # print("preds", preds_test[0, :, :].cpu())
-                            # print("targets", target_test[0, :, :].cpu())
+                            if self.debug:
+                                print("signal", signal_test[0, :, :].cpu())
+                                print("preds", preds_test[0, :, :].cpu())
+                                print("targets", target_test[0, :, :].cpu())
 
                             loss_test = self.criterion(preds_test, target_test)
                             tmp_test_loss[idx_test] = np.mean(loss_test.cpu().detach().item())

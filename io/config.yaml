@@ -30,13 +30,13 @@ Strategy:
     data_path_y: "Data/crypto-1min/eth-min1/neural_data_transformers/ETH_MACD_January2024_y.pt"
     weights_path: "io/Transformers/Weights/"
     loss_path: "io/Transformers/Losses/"
-    load_weights: False
+    load_weights: True
     batch_size: 64
     learning_rate: 0.001
     nb_epochs: 25
-    embedding_size: 40
+    embedding_size: 8
     kernel_size: 5
-    nb_heads: 10
+    nb_heads: 8
     padding: 2
     nb_encoder_layers: 8
     forward_expansion: 4
@@ -44,5 +44,5 @@ Strategy:
     max_len: 5000
     dropout: 0.2
     normalize: False
-    debug: False
+    debug: True
     debug_name: False
