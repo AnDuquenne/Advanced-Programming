@@ -1,0 +1,282 @@
+2024-03-25 17:43:40,702 INFO    StreamThr :32212 [internal.py:wandb_internal():86] W&B internal server running at pid: 32212, started at: 2024-03-25 17:43:40.702099
+2024-03-25 17:43:40,704 DEBUG   HandlerThread:32212 [handler.py:handle_request():146] handle_request: status
+2024-03-25 17:43:40,709 INFO    WriterThread:32212 [datastore.py:open_for_write():87] open: C:\Users\dadou\Documents\Github\Advanced-Programming\Strategies\wandb\run-20240325_174340-tw0y0dnu\run-tw0y0dnu.wandb
+2024-03-25 17:43:40,709 DEBUG   SenderThread:32212 [sender.py:send():378] send: header
+2024-03-25 17:43:40,736 DEBUG   SenderThread:32212 [sender.py:send():378] send: run
+2024-03-25 17:43:41,361 INFO    SenderThread:32212 [dir_watcher.py:__init__():211] watching files in: C:\Users\dadou\Documents\Github\Advanced-Programming\Strategies\wandb\run-20240325_174340-tw0y0dnu\files
+2024-03-25 17:43:41,361 INFO    SenderThread:32212 [sender.py:_start_run_threads():1099] run started: tw0y0dnu with start time 1711385020.703107
+2024-03-25 17:43:41,367 DEBUG   HandlerThread:32212 [handler.py:handle_request():146] handle_request: check_version
+2024-03-25 17:43:41,367 DEBUG   SenderThread:32212 [sender.py:send_request():405] send_request: check_version
+2024-03-25 17:43:41,704 DEBUG   HandlerThread:32212 [handler.py:handle_request():146] handle_request: run_start
+2024-03-25 17:43:41,724 DEBUG   HandlerThread:32212 [system_info.py:__init__():26] System info init
+2024-03-25 17:43:41,724 DEBUG   HandlerThread:32212 [system_info.py:__init__():41] System info init done
+2024-03-25 17:43:41,724 INFO    HandlerThread:32212 [system_monitor.py:start():194] Starting system monitor
+2024-03-25 17:43:41,725 INFO    SystemMonitor:32212 [system_monitor.py:_start():158] Starting system asset monitoring threads
+2024-03-25 17:43:41,725 INFO    HandlerThread:32212 [system_monitor.py:probe():214] Collecting system info
+2024-03-25 17:43:41,729 INFO    SystemMonitor:32212 [interfaces.py:start():190] Started cpu monitoring
+2024-03-25 17:43:41,729 INFO    SystemMonitor:32212 [interfaces.py:start():190] Started disk monitoring
+2024-03-25 17:43:41,731 INFO    SystemMonitor:32212 [interfaces.py:start():190] Started gpu monitoring
+2024-03-25 17:43:41,739 INFO    SystemMonitor:32212 [interfaces.py:start():190] Started memory monitoring
+2024-03-25 17:43:41,748 INFO    SystemMonitor:32212 [interfaces.py:start():190] Started network monitoring
+2024-03-25 17:43:41,752 DEBUG   HandlerThread:32212 [system_info.py:probe():150] Probing system
+2024-03-25 17:43:41,753 DEBUG   HandlerThread:32212 [system_info.py:_probe_git():135] Probing git
+2024-03-25 17:43:41,808 DEBUG   HandlerThread:32212 [system_info.py:_probe_git():143] Probing git done
+2024-03-25 17:43:41,808 DEBUG   HandlerThread:32212 [system_info.py:probe():198] Probing system done
+2024-03-25 17:43:41,808 DEBUG   HandlerThread:32212 [system_monitor.py:probe():223] {'os': 'Windows-10-10.0.22635-SP0', 'python': '3.11.8', 'heartbeatAt': '2024-03-25T16:43:41.752886', 'startedAt': '2024-03-25T16:43:40.693983', 'docker': None, 'cuda': None, 'args': (), 'state': 'running', 'program': 'C:\\Users\\dadou\\Documents\\Github\\Advanced-Programming\\Strategies\\Transformer_strategy.py', 'codePathLocal': 'Transformer_strategy.py', 'codePath': 'Strategies\\Transformer_strategy.py', 'git': {'remote': 'https://github.com/AnDuquenne/Advanced-Programming.git', 'commit': '32f89c8c2000d0f2a073a389400887b31d6b18b9'}, 'email': 'andreas_duquenne@hotmail.com', 'root': 'C:/Users/dadou/Documents/Github/Advanced-Programming', 'host': 'DESKTOP-MM17CI9', 'username': 'dadou', 'executable': 'C:\\Users\\dadou\\anaconda3\\envs\\Advanced-Programming\\python.exe', 'cpu_count': 6, 'cpu_count_logical': 12, 'cpu_freq': {'current': 3912.0, 'min': 0.0, 'max': 3912.0}, 'cpu_freq_per_core': [{'current': 3912.0, 'min': 0.0, 'max': 3912.0}], 'disk': {'/': {'total': 465.07911682128906, 'used': 375.547061920166}}, 'gpu': 'NVIDIA GeForce RTX 3060', 'gpu_count': 1, 'gpu_devices': [{'name': 'NVIDIA GeForce RTX 3060', 'memory_total': 12884901888}], 'memory': {'total': 31.87225341796875}}
+2024-03-25 17:43:41,808 INFO    HandlerThread:32212 [system_monitor.py:probe():224] Finished collecting system info
+2024-03-25 17:43:41,808 INFO    HandlerThread:32212 [system_monitor.py:probe():227] Publishing system info
+2024-03-25 17:43:41,809 DEBUG   HandlerThread:32212 [system_info.py:_save_conda():207] Saving list of conda packages installed into the current environment
+2024-03-25 17:43:41,811 ERROR   HandlerThread:32212 [system_info.py:_save_conda():218] Error saving conda packages: [WinError 2] Le fichier spécifié est introuvable
+Traceback (most recent call last):
+  File "C:\Users\dadou\anaconda3\envs\Advanced-Programming\Lib\site-packages\wandb\sdk\internal\system\system_info.py", line 214, in _save_conda
+    subprocess.call(
+  File "C:\Users\dadou\anaconda3\envs\Advanced-Programming\Lib\subprocess.py", line 389, in call
+    with Popen(*popenargs, **kwargs) as p:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\dadou\anaconda3\envs\Advanced-Programming\Lib\subprocess.py", line 1026, in __init__
+    self._execute_child(args, executable, preexec_fn, close_fds,
+  File "C:\Users\dadou\anaconda3\envs\Advanced-Programming\Lib\subprocess.py", line 1538, in _execute_child
+    hp, ht, pid, tid = _winapi.CreateProcess(executable, args,
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [WinError 2] Le fichier spécifié est introuvable
+2024-03-25 17:43:41,812 DEBUG   HandlerThread:32212 [system_info.py:_save_conda():219] Saving conda packages done
+2024-03-25 17:43:41,814 INFO    HandlerThread:32212 [system_monitor.py:probe():229] Finished publishing system info
+2024-03-25 17:43:41,817 DEBUG   SenderThread:32212 [sender.py:send():378] send: files
+2024-03-25 17:43:41,817 INFO    SenderThread:32212 [sender.py:_save_file():1365] saving file wandb-metadata.json with policy now
+2024-03-25 17:43:41,881 DEBUG   HandlerThread:32212 [handler.py:handle_request():146] handle_request: python_packages
+2024-03-25 17:43:41,881 DEBUG   SenderThread:32212 [sender.py:send_request():405] send_request: python_packages
+2024-03-25 17:43:41,881 DEBUG   HandlerThread:32212 [handler.py:handle_request():146] handle_request: stop_status
+2024-03-25 17:43:41,882 DEBUG   SenderThread:32212 [sender.py:send_request():405] send_request: stop_status
+2024-03-25 17:43:41,884 DEBUG   HandlerThread:32212 [handler.py:handle_request():146] handle_request: internal_messages
+2024-03-25 17:43:42,363 INFO    Thread-16 :32212 [dir_watcher.py:_on_file_created():271] file/dir created: C:\Users\dadou\Documents\Github\Advanced-Programming\Strategies\wandb\run-20240325_174340-tw0y0dnu\files\conda-environment.yaml
+2024-03-25 17:43:42,363 INFO    Thread-16 :32212 [dir_watcher.py:_on_file_created():271] file/dir created: C:\Users\dadou\Documents\Github\Advanced-Programming\Strategies\wandb\run-20240325_174340-tw0y0dnu\files\requirements.txt
+2024-03-25 17:43:42,364 INFO    Thread-16 :32212 [dir_watcher.py:_on_file_created():271] file/dir created: C:\Users\dadou\Documents\Github\Advanced-Programming\Strategies\wandb\run-20240325_174340-tw0y0dnu\files\wandb-metadata.json
+2024-03-25 17:43:42,366 DEBUG   SenderThread:32212 [sender.py:send():378] send: telemetry
+2024-03-25 17:43:42,595 INFO    wandb-upload_0:32212 [upload_job.py:push():131] Uploaded file C:\Users\dadou\AppData\Local\Temp\tmp0_q6fcnywandb\s59alosj-wandb-metadata.json
+2024-03-25 17:43:43,366 INFO    Thread-16 :32212 [dir_watcher.py:_on_file_created():271] file/dir created: C:\Users\dadou\Documents\Github\Advanced-Programming\Strategies\wandb\run-20240325_174340-tw0y0dnu\files\output.log
+2024-03-25 17:43:44,457 INFO    Thread-16 :32212 [dir_watcher.py:_on_file_modified():288] file/dir modified: C:\Users\dadou\Documents\Github\Advanced-Programming\Strategies\wandb\run-20240325_174340-tw0y0dnu\files\output.log
+2024-03-25 17:43:45,706 DEBUG   HandlerThread:32212 [handler.py:handle_request():146] handle_request: status_report
+2024-03-25 17:43:46,545 INFO    Thread-16 :32212 [dir_watcher.py:_on_file_modified():288] file/dir modified: C:\Users\dadou\Documents\Github\Advanced-Programming\Strategies\wandb\run-20240325_174340-tw0y0dnu\files\output.log
+2024-03-25 17:43:48,162 DEBUG   HandlerThread:32212 [handler.py:handle_request():146] handle_request: partial_history
+2024-03-25 17:43:48,162 DEBUG   HandlerThread:32212 [handler.py:handle_request():146] handle_request: partial_history
+2024-03-25 17:43:48,708 INFO    Thread-16 :32212 [dir_watcher.py:_on_file_modified():288] file/dir modified: C:\Users\dadou\Documents\Github\Advanced-Programming\Strategies\wandb\run-20240325_174340-tw0y0dnu\files\output.log
+2024-03-25 17:43:50,781 DEBUG   HandlerThread:32212 [handler.py:handle_request():146] handle_request: status_report
+2024-03-25 17:43:50,781 INFO    Thread-16 :32212 [dir_watcher.py:_on_file_modified():288] file/dir modified: C:\Users\dadou\Documents\Github\Advanced-Programming\Strategies\wandb\run-20240325_174340-tw0y0dnu\files\output.log
+2024-03-25 17:43:52,873 INFO    Thread-16 :32212 [dir_watcher.py:_on_file_modified():288] file/dir modified: C:\Users\dadou\Documents\Github\Advanced-Programming\Strategies\wandb\run-20240325_174340-tw0y0dnu\files\output.log
+2024-03-25 17:43:54,744 DEBUG   HandlerThread:32212 [handler.py:handle_request():146] handle_request: partial_history
+2024-03-25 17:43:54,744 DEBUG   HandlerThread:32212 [handler.py:handle_request():146] handle_request: partial_history
+2024-03-25 17:43:54,745 DEBUG   SenderThread:32212 [sender.py:send():378] send: history
+2024-03-25 17:43:54,745 DEBUG   SenderThread:32212 [sender.py:send_request():405] send_request: summary_record
+2024-03-25 17:43:54,745 INFO    SenderThread:32212 [sender.py:_save_file():1365] saving file wandb-summary.json with policy end
+2024-03-25 17:43:54,990 INFO    Thread-16 :32212 [dir_watcher.py:_on_file_modified():288] file/dir modified: C:\Users\dadou\Documents\Github\Advanced-Programming\Strategies\wandb\run-20240325_174340-tw0y0dnu\files\output.log
+2024-03-25 17:43:54,990 INFO    Thread-16 :32212 [dir_watcher.py:_on_file_created():271] file/dir created: C:\Users\dadou\Documents\Github\Advanced-Programming\Strategies\wandb\run-20240325_174340-tw0y0dnu\files\wandb-summary.json
+2024-03-25 17:43:55,780 DEBUG   HandlerThread:32212 [handler.py:handle_request():146] handle_request: status_report
+2024-03-25 17:43:56,885 DEBUG   HandlerThread:32212 [handler.py:handle_request():146] handle_request: internal_messages
+2024-03-25 17:43:56,885 DEBUG   HandlerThread:32212 [handler.py:handle_request():146] handle_request: stop_status
+2024-03-25 17:43:56,885 DEBUG   SenderThread:32212 [sender.py:send_request():405] send_request: stop_status
+2024-03-25 17:43:57,082 INFO    Thread-16 :32212 [dir_watcher.py:_on_file_modified():288] file/dir modified: C:\Users\dadou\Documents\Github\Advanced-Programming\Strategies\wandb\run-20240325_174340-tw0y0dnu\files\output.log
+2024-03-25 17:43:59,214 INFO    Thread-16 :32212 [dir_watcher.py:_on_file_modified():288] file/dir modified: C:\Users\dadou\Documents\Github\Advanced-Programming\Strategies\wandb\run-20240325_174340-tw0y0dnu\files\output.log
+2024-03-25 17:44:00,802 DEBUG   HandlerThread:32212 [handler.py:handle_request():146] handle_request: status_report
+2024-03-25 17:44:01,155 DEBUG   HandlerThread:32212 [handler.py:handle_request():146] handle_request: partial_history
+2024-03-25 17:44:01,155 DEBUG   HandlerThread:32212 [handler.py:handle_request():146] handle_request: partial_history
+2024-03-25 17:44:01,156 DEBUG   SenderThread:32212 [sender.py:send():378] send: history
+2024-03-25 17:44:01,156 DEBUG   SenderThread:32212 [sender.py:send_request():405] send_request: summary_record
+2024-03-25 17:44:01,156 INFO    SenderThread:32212 [sender.py:_save_file():1365] saving file wandb-summary.json with policy end
+2024-03-25 17:44:01,290 INFO    Thread-16 :32212 [dir_watcher.py:_on_file_modified():288] file/dir modified: C:\Users\dadou\Documents\Github\Advanced-Programming\Strategies\wandb\run-20240325_174340-tw0y0dnu\files\output.log
+2024-03-25 17:44:01,290 INFO    Thread-16 :32212 [dir_watcher.py:_on_file_modified():288] file/dir modified: C:\Users\dadou\Documents\Github\Advanced-Programming\Strategies\wandb\run-20240325_174340-tw0y0dnu\files\wandb-summary.json
+2024-03-25 17:44:03,400 INFO    Thread-16 :32212 [dir_watcher.py:_on_file_modified():288] file/dir modified: C:\Users\dadou\Documents\Github\Advanced-Programming\Strategies\wandb\run-20240325_174340-tw0y0dnu\files\output.log
+2024-03-25 17:44:05,483 INFO    Thread-16 :32212 [dir_watcher.py:_on_file_modified():288] file/dir modified: C:\Users\dadou\Documents\Github\Advanced-Programming\Strategies\wandb\run-20240325_174340-tw0y0dnu\files\output.log
+2024-03-25 17:44:05,802 DEBUG   HandlerThread:32212 [handler.py:handle_request():146] handle_request: status_report
+2024-03-25 17:44:07,436 DEBUG   HandlerThread:32212 [handler.py:handle_request():146] handle_request: partial_history
+2024-03-25 17:44:07,436 DEBUG   HandlerThread:32212 [handler.py:handle_request():146] handle_request: partial_history
+2024-03-25 17:44:07,436 DEBUG   SenderThread:32212 [sender.py:send():378] send: history
+2024-03-25 17:44:07,436 DEBUG   SenderThread:32212 [sender.py:send_request():405] send_request: summary_record
+2024-03-25 17:44:07,437 INFO    SenderThread:32212 [sender.py:_save_file():1365] saving file wandb-summary.json with policy end
+2024-03-25 17:44:07,600 INFO    Thread-16 :32212 [dir_watcher.py:_on_file_modified():288] file/dir modified: C:\Users\dadou\Documents\Github\Advanced-Programming\Strategies\wandb\run-20240325_174340-tw0y0dnu\files\output.log
+2024-03-25 17:44:07,600 INFO    Thread-16 :32212 [dir_watcher.py:_on_file_modified():288] file/dir modified: C:\Users\dadou\Documents\Github\Advanced-Programming\Strategies\wandb\run-20240325_174340-tw0y0dnu\files\wandb-summary.json
+2024-03-25 17:44:08,602 INFO    Thread-16 :32212 [dir_watcher.py:_on_file_modified():288] file/dir modified: C:\Users\dadou\Documents\Github\Advanced-Programming\Strategies\wandb\run-20240325_174340-tw0y0dnu\files\output.log
+2024-03-25 17:44:09,706 INFO    Thread-16 :32212 [dir_watcher.py:_on_file_modified():288] file/dir modified: C:\Users\dadou\Documents\Github\Advanced-Programming\Strategies\wandb\run-20240325_174340-tw0y0dnu\files\output.log
+2024-03-25 17:44:10,813 DEBUG   HandlerThread:32212 [handler.py:handle_request():146] handle_request: status_report
+2024-03-25 17:44:11,790 INFO    Thread-16 :32212 [dir_watcher.py:_on_file_modified():288] file/dir modified: C:\Users\dadou\Documents\Github\Advanced-Programming\Strategies\wandb\run-20240325_174340-tw0y0dnu\files\output.log
+2024-03-25 17:44:11,790 INFO    Thread-16 :32212 [dir_watcher.py:_on_file_modified():288] file/dir modified: C:\Users\dadou\Documents\Github\Advanced-Programming\Strategies\wandb\run-20240325_174340-tw0y0dnu\files\config.yaml
+2024-03-25 17:44:11,895 DEBUG   HandlerThread:32212 [handler.py:handle_request():146] handle_request: internal_messages
+2024-03-25 17:44:11,895 DEBUG   HandlerThread:32212 [handler.py:handle_request():146] handle_request: stop_status
+2024-03-25 17:44:11,896 DEBUG   SenderThread:32212 [sender.py:send_request():405] send_request: stop_status
+2024-03-25 17:44:13,863 DEBUG   HandlerThread:32212 [handler.py:handle_request():146] handle_request: partial_history
+2024-03-25 17:44:13,863 DEBUG   HandlerThread:32212 [handler.py:handle_request():146] handle_request: partial_history
+2024-03-25 17:44:13,893 DEBUG   SenderThread:32212 [sender.py:send():378] send: history
+2024-03-25 17:44:13,893 DEBUG   SenderThread:32212 [sender.py:send_request():405] send_request: summary_record
+2024-03-25 17:44:13,895 INFO    Thread-16 :32212 [dir_watcher.py:_on_file_modified():288] file/dir modified: C:\Users\dadou\Documents\Github\Advanced-Programming\Strategies\wandb\run-20240325_174340-tw0y0dnu\files\wandb-summary.json
+2024-03-25 17:44:13,896 INFO    SenderThread:32212 [sender.py:_save_file():1365] saving file wandb-summary.json with policy end
+2024-03-25 17:44:14,896 INFO    Thread-16 :32212 [dir_watcher.py:_on_file_modified():288] file/dir modified: C:\Users\dadou\Documents\Github\Advanced-Programming\Strategies\wandb\run-20240325_174340-tw0y0dnu\files\output.log
+2024-03-25 17:44:14,896 INFO    Thread-16 :32212 [dir_watcher.py:_on_file_modified():288] file/dir modified: C:\Users\dadou\Documents\Github\Advanced-Programming\Strategies\wandb\run-20240325_174340-tw0y0dnu\files\wandb-summary.json
+2024-03-25 17:44:16,015 DEBUG   HandlerThread:32212 [handler.py:handle_request():146] handle_request: status_report
+2024-03-25 17:44:16,019 INFO    Thread-16 :32212 [dir_watcher.py:_on_file_modified():288] file/dir modified: C:\Users\dadou\Documents\Github\Advanced-Programming\Strategies\wandb\run-20240325_174340-tw0y0dnu\files\output.log
+2024-03-25 17:44:18,112 INFO    Thread-16 :32212 [dir_watcher.py:_on_file_modified():288] file/dir modified: C:\Users\dadou\Documents\Github\Advanced-Programming\Strategies\wandb\run-20240325_174340-tw0y0dnu\files\output.log
+2024-03-25 17:44:20,213 INFO    Thread-16 :32212 [dir_watcher.py:_on_file_modified():288] file/dir modified: C:\Users\dadou\Documents\Github\Advanced-Programming\Strategies\wandb\run-20240325_174340-tw0y0dnu\files\output.log
+2024-03-25 17:44:20,429 DEBUG   HandlerThread:32212 [handler.py:handle_request():146] handle_request: partial_history
+2024-03-25 17:44:20,429 DEBUG   HandlerThread:32212 [handler.py:handle_request():146] handle_request: partial_history
+2024-03-25 17:44:20,429 DEBUG   SenderThread:32212 [sender.py:send():378] send: history
+2024-03-25 17:44:20,430 DEBUG   SenderThread:32212 [sender.py:send_request():405] send_request: summary_record
+2024-03-25 17:44:20,430 INFO    SenderThread:32212 [sender.py:_save_file():1365] saving file wandb-summary.json with policy end
+2024-03-25 17:44:21,009 DEBUG   HandlerThread:32212 [handler.py:handle_request():146] handle_request: status_report
+2024-03-25 17:44:21,215 INFO    Thread-16 :32212 [dir_watcher.py:_on_file_modified():288] file/dir modified: C:\Users\dadou\Documents\Github\Advanced-Programming\Strategies\wandb\run-20240325_174340-tw0y0dnu\files\wandb-summary.json
+2024-03-25 17:44:23,351 INFO    Thread-16 :32212 [dir_watcher.py:_on_file_modified():288] file/dir modified: C:\Users\dadou\Documents\Github\Advanced-Programming\Strategies\wandb\run-20240325_174340-tw0y0dnu\files\output.log
+2024-03-25 17:44:24,426 INFO    Thread-16 :32212 [dir_watcher.py:_on_file_modified():288] file/dir modified: C:\Users\dadou\Documents\Github\Advanced-Programming\Strategies\wandb\run-20240325_174340-tw0y0dnu\files\output.log
+2024-03-25 17:44:26,012 DEBUG   HandlerThread:32212 [handler.py:handle_request():146] handle_request: status_report
+2024-03-25 17:44:26,527 INFO    Thread-16 :32212 [dir_watcher.py:_on_file_modified():288] file/dir modified: C:\Users\dadou\Documents\Github\Advanced-Programming\Strategies\wandb\run-20240325_174340-tw0y0dnu\files\output.log
+2024-03-25 17:44:26,745 DEBUG   HandlerThread:32212 [handler.py:handle_request():146] handle_request: partial_history
+2024-03-25 17:44:26,745 DEBUG   HandlerThread:32212 [handler.py:handle_request():146] handle_request: partial_history
+2024-03-25 17:44:26,746 DEBUG   SenderThread:32212 [sender.py:send():378] send: history
+2024-03-25 17:44:26,746 DEBUG   SenderThread:32212 [sender.py:send_request():405] send_request: summary_record
+2024-03-25 17:44:26,746 INFO    SenderThread:32212 [sender.py:_save_file():1365] saving file wandb-summary.json with policy end
+2024-03-25 17:44:26,895 DEBUG   HandlerThread:32212 [handler.py:handle_request():146] handle_request: internal_messages
+2024-03-25 17:44:26,912 DEBUG   HandlerThread:32212 [handler.py:handle_request():146] handle_request: stop_status
+2024-03-25 17:44:26,912 DEBUG   SenderThread:32212 [sender.py:send_request():405] send_request: stop_status
+2024-03-25 17:44:27,534 INFO    Thread-16 :32212 [dir_watcher.py:_on_file_modified():288] file/dir modified: C:\Users\dadou\Documents\Github\Advanced-Programming\Strategies\wandb\run-20240325_174340-tw0y0dnu\files\wandb-summary.json
+2024-03-25 17:44:27,555 DEBUG   SenderThread:32212 [sender.py:send():378] send: exit
+2024-03-25 17:44:27,555 INFO    SenderThread:32212 [sender.py:send_exit():585] handling exit code: 255
+2024-03-25 17:44:27,555 INFO    SenderThread:32212 [sender.py:send_exit():587] handling runtime: 45
+2024-03-25 17:44:27,556 INFO    SenderThread:32212 [sender.py:_save_file():1365] saving file wandb-summary.json with policy end
+2024-03-25 17:44:27,556 INFO    SenderThread:32212 [sender.py:send_exit():593] send defer
+2024-03-25 17:44:27,556 DEBUG   HandlerThread:32212 [handler.py:handle_request():146] handle_request: defer
+2024-03-25 17:44:27,556 INFO    HandlerThread:32212 [handler.py:handle_request_defer():172] handle defer: 0
+2024-03-25 17:44:27,556 DEBUG   SenderThread:32212 [sender.py:send_request():405] send_request: defer
+2024-03-25 17:44:27,556 INFO    SenderThread:32212 [sender.py:send_request_defer():609] handle sender defer: 0
+2024-03-25 17:44:27,556 INFO    SenderThread:32212 [sender.py:transition_state():613] send defer: 1
+2024-03-25 17:44:27,556 DEBUG   HandlerThread:32212 [handler.py:handle_request():146] handle_request: defer
+2024-03-25 17:44:27,556 INFO    HandlerThread:32212 [handler.py:handle_request_defer():172] handle defer: 1
+2024-03-25 17:44:27,556 DEBUG   SenderThread:32212 [sender.py:send_request():405] send_request: defer
+2024-03-25 17:44:27,556 INFO    SenderThread:32212 [sender.py:send_request_defer():609] handle sender defer: 1
+2024-03-25 17:44:27,556 INFO    SenderThread:32212 [sender.py:transition_state():613] send defer: 2
+2024-03-25 17:44:27,556 DEBUG   HandlerThread:32212 [handler.py:handle_request():146] handle_request: defer
+2024-03-25 17:44:27,557 INFO    HandlerThread:32212 [handler.py:handle_request_defer():172] handle defer: 2
+2024-03-25 17:44:27,557 INFO    HandlerThread:32212 [system_monitor.py:finish():203] Stopping system monitor
+2024-03-25 17:44:27,557 DEBUG   SystemMonitor:32212 [system_monitor.py:_start():172] Starting system metrics aggregation loop
+2024-03-25 17:44:27,564 DEBUG   SystemMonitor:32212 [system_monitor.py:_start():179] Finished system metrics aggregation loop
+2024-03-25 17:44:27,564 INFO    HandlerThread:32212 [interfaces.py:finish():202] Joined cpu monitor
+2024-03-25 17:44:27,564 DEBUG   SystemMonitor:32212 [system_monitor.py:_start():183] Publishing last batch of metrics
+2024-03-25 17:44:27,564 INFO    HandlerThread:32212 [interfaces.py:finish():202] Joined disk monitor
+2024-03-25 17:44:27,618 INFO    HandlerThread:32212 [interfaces.py:finish():202] Joined gpu monitor
+2024-03-25 17:44:27,618 INFO    HandlerThread:32212 [interfaces.py:finish():202] Joined memory monitor
+2024-03-25 17:44:27,618 INFO    HandlerThread:32212 [interfaces.py:finish():202] Joined network monitor
+2024-03-25 17:44:27,618 DEBUG   SenderThread:32212 [sender.py:send_request():405] send_request: defer
+2024-03-25 17:44:27,618 INFO    SenderThread:32212 [sender.py:send_request_defer():609] handle sender defer: 2
+2024-03-25 17:44:27,618 INFO    SenderThread:32212 [sender.py:transition_state():613] send defer: 3
+2024-03-25 17:44:27,618 DEBUG   SenderThread:32212 [sender.py:send():378] send: stats
+2024-03-25 17:44:27,620 DEBUG   HandlerThread:32212 [handler.py:handle_request():146] handle_request: defer
+2024-03-25 17:44:27,620 INFO    HandlerThread:32212 [handler.py:handle_request_defer():172] handle defer: 3
+2024-03-25 17:44:27,620 DEBUG   SenderThread:32212 [sender.py:send():378] send: history
+2024-03-25 17:44:27,620 DEBUG   SenderThread:32212 [sender.py:send_request():405] send_request: summary_record
+2024-03-25 17:44:27,621 INFO    SenderThread:32212 [sender.py:_save_file():1365] saving file wandb-summary.json with policy end
+2024-03-25 17:44:27,621 DEBUG   SenderThread:32212 [sender.py:send_request():405] send_request: defer
+2024-03-25 17:44:27,621 INFO    SenderThread:32212 [sender.py:send_request_defer():609] handle sender defer: 3
+2024-03-25 17:44:27,621 INFO    SenderThread:32212 [sender.py:transition_state():613] send defer: 4
+2024-03-25 17:44:27,621 DEBUG   HandlerThread:32212 [handler.py:handle_request():146] handle_request: defer
+2024-03-25 17:44:27,621 INFO    HandlerThread:32212 [handler.py:handle_request_defer():172] handle defer: 4
+2024-03-25 17:44:27,621 DEBUG   SenderThread:32212 [sender.py:send_request():405] send_request: defer
+2024-03-25 17:44:27,621 INFO    SenderThread:32212 [sender.py:send_request_defer():609] handle sender defer: 4
+2024-03-25 17:44:27,621 INFO    SenderThread:32212 [sender.py:transition_state():613] send defer: 5
+2024-03-25 17:44:27,621 DEBUG   HandlerThread:32212 [handler.py:handle_request():146] handle_request: defer
+2024-03-25 17:44:27,621 INFO    HandlerThread:32212 [handler.py:handle_request_defer():172] handle defer: 5
+2024-03-25 17:44:27,622 DEBUG   SenderThread:32212 [sender.py:send():378] send: summary
+2024-03-25 17:44:27,622 INFO    SenderThread:32212 [sender.py:_save_file():1365] saving file wandb-summary.json with policy end
+2024-03-25 17:44:27,622 DEBUG   SenderThread:32212 [sender.py:send_request():405] send_request: defer
+2024-03-25 17:44:27,622 INFO    SenderThread:32212 [sender.py:send_request_defer():609] handle sender defer: 5
+2024-03-25 17:44:27,622 INFO    SenderThread:32212 [sender.py:transition_state():613] send defer: 6
+2024-03-25 17:44:27,622 DEBUG   HandlerThread:32212 [handler.py:handle_request():146] handle_request: defer
+2024-03-25 17:44:27,622 INFO    HandlerThread:32212 [handler.py:handle_request_defer():172] handle defer: 6
+2024-03-25 17:44:27,622 DEBUG   SenderThread:32212 [sender.py:send_request():405] send_request: defer
+2024-03-25 17:44:27,622 INFO    SenderThread:32212 [sender.py:send_request_defer():609] handle sender defer: 6
+2024-03-25 17:44:27,622 INFO    SenderThread:32212 [sender.py:transition_state():613] send defer: 7
+2024-03-25 17:44:27,622 DEBUG   HandlerThread:32212 [handler.py:handle_request():146] handle_request: status_report
+2024-03-25 17:44:27,622 DEBUG   HandlerThread:32212 [handler.py:handle_request():146] handle_request: defer
+2024-03-25 17:44:27,624 INFO    HandlerThread:32212 [handler.py:handle_request_defer():172] handle defer: 7
+2024-03-25 17:44:27,624 DEBUG   SenderThread:32212 [sender.py:send_request():405] send_request: defer
+2024-03-25 17:44:27,624 INFO    SenderThread:32212 [sender.py:send_request_defer():609] handle sender defer: 7
+2024-03-25 17:44:28,600 DEBUG   HandlerThread:32212 [handler.py:handle_request():146] handle_request: poll_exit
+2024-03-25 17:44:28,600 INFO    SenderThread:32212 [sender.py:transition_state():613] send defer: 8
+2024-03-25 17:44:28,600 DEBUG   HandlerThread:32212 [handler.py:handle_request():146] handle_request: defer
+2024-03-25 17:44:28,601 INFO    HandlerThread:32212 [handler.py:handle_request_defer():172] handle defer: 8
+2024-03-25 17:44:28,601 DEBUG   SenderThread:32212 [sender.py:send_request():405] send_request: poll_exit
+2024-03-25 17:44:28,601 DEBUG   SenderThread:32212 [sender.py:send_request():405] send_request: defer
+2024-03-25 17:44:28,601 INFO    SenderThread:32212 [sender.py:send_request_defer():609] handle sender defer: 8
+2024-03-25 17:44:28,601 INFO    SenderThread:32212 [job_builder.py:build():298] Attempting to build job artifact
+2024-03-25 17:44:28,602 INFO    Thread-16 :32212 [dir_watcher.py:_on_file_modified():288] file/dir modified: C:\Users\dadou\Documents\Github\Advanced-Programming\Strategies\wandb\run-20240325_174340-tw0y0dnu\files\output.log
+2024-03-25 17:44:28,602 INFO    Thread-16 :32212 [dir_watcher.py:_on_file_modified():288] file/dir modified: C:\Users\dadou\Documents\Github\Advanced-Programming\Strategies\wandb\run-20240325_174340-tw0y0dnu\files\wandb-summary.json
+2024-03-25 17:44:28,602 INFO    SenderThread:32212 [job_builder.py:_get_source_type():428] is repo sourced job
+2024-03-25 17:44:28,882 INFO    SenderThread:32212 [job_builder.py:build():404] adding wandb-job metadata file
+2024-03-25 17:44:28,890 INFO    SenderThread:32212 [sender.py:transition_state():613] send defer: 9
+2024-03-25 17:44:28,891 DEBUG   SenderThread:32212 [sender.py:send():378] send: artifact
+2024-03-25 17:44:28,891 DEBUG   HandlerThread:32212 [handler.py:handle_request():146] handle_request: defer
+2024-03-25 17:44:28,892 INFO    HandlerThread:32212 [handler.py:handle_request_defer():172] handle defer: 9
+2024-03-25 17:44:29,608 DEBUG   HandlerThread:32212 [handler.py:handle_request():146] handle_request: poll_exit
+2024-03-25 17:44:29,688 INFO    SenderThread:32212 [sender.py:send_artifact():1443] sent artifact job-https___github.com_AnDuquenne_Advanced-Programming.git_Strategies_Transformer_strategy.py - {'id': 'QXJ0aWZhY3Q6NzcwMDg4OTA0', 'state': 'COMMITTED', 'artifactSequence': {'id': 'QXJ0aWZhY3RDb2xsZWN0aW9uOjE1MjA4NjcxMA==', 'latestArtifact': {'id': 'QXJ0aWZhY3Q6NzcwMDg4OTA0', 'versionIndex': 7}}}
+2024-03-25 17:44:29,688 DEBUG   SenderThread:32212 [sender.py:send_request():405] send_request: defer
+2024-03-25 17:44:29,688 INFO    SenderThread:32212 [sender.py:send_request_defer():609] handle sender defer: 9
+2024-03-25 17:44:29,688 INFO    SenderThread:32212 [dir_watcher.py:finish():358] shutting down directory watcher
+2024-03-25 17:44:30,623 INFO    SenderThread:32212 [dir_watcher.py:finish():388] scan: C:\Users\dadou\Documents\Github\Advanced-Programming\Strategies\wandb\run-20240325_174340-tw0y0dnu\files
+2024-03-25 17:44:30,623 INFO    SenderThread:32212 [dir_watcher.py:finish():402] scan save: C:\Users\dadou\Documents\Github\Advanced-Programming\Strategies\wandb\run-20240325_174340-tw0y0dnu\files\conda-environment.yaml conda-environment.yaml
+2024-03-25 17:44:30,623 INFO    SenderThread:32212 [dir_watcher.py:finish():402] scan save: C:\Users\dadou\Documents\Github\Advanced-Programming\Strategies\wandb\run-20240325_174340-tw0y0dnu\files\config.yaml config.yaml
+2024-03-25 17:44:30,624 INFO    SenderThread:32212 [dir_watcher.py:finish():402] scan save: C:\Users\dadou\Documents\Github\Advanced-Programming\Strategies\wandb\run-20240325_174340-tw0y0dnu\files\output.log output.log
+2024-03-25 17:44:30,624 INFO    SenderThread:32212 [dir_watcher.py:finish():402] scan save: C:\Users\dadou\Documents\Github\Advanced-Programming\Strategies\wandb\run-20240325_174340-tw0y0dnu\files\requirements.txt requirements.txt
+2024-03-25 17:44:30,625 INFO    SenderThread:32212 [dir_watcher.py:finish():402] scan save: C:\Users\dadou\Documents\Github\Advanced-Programming\Strategies\wandb\run-20240325_174340-tw0y0dnu\files\wandb-metadata.json wandb-metadata.json
+2024-03-25 17:44:30,625 INFO    SenderThread:32212 [dir_watcher.py:finish():402] scan save: C:\Users\dadou\Documents\Github\Advanced-Programming\Strategies\wandb\run-20240325_174340-tw0y0dnu\files\wandb-summary.json wandb-summary.json
+2024-03-25 17:44:30,626 INFO    SenderThread:32212 [sender.py:transition_state():613] send defer: 10
+2024-03-25 17:44:30,626 DEBUG   SenderThread:32212 [sender.py:send_request():405] send_request: poll_exit
+2024-03-25 17:44:30,627 DEBUG   HandlerThread:32212 [handler.py:handle_request():146] handle_request: defer
+2024-03-25 17:44:30,627 INFO    HandlerThread:32212 [handler.py:handle_request_defer():172] handle defer: 10
+2024-03-25 17:44:30,628 DEBUG   SenderThread:32212 [sender.py:send_request():405] send_request: defer
+2024-03-25 17:44:30,628 INFO    SenderThread:32212 [sender.py:send_request_defer():609] handle sender defer: 10
+2024-03-25 17:44:30,628 INFO    SenderThread:32212 [file_pusher.py:finish():172] shutting down file pusher
+2024-03-25 17:44:31,017 INFO    wandb-upload_0:32212 [upload_job.py:push():131] Uploaded file C:\Users\dadou\Documents\Github\Advanced-Programming\Strategies\wandb\run-20240325_174340-tw0y0dnu\files\config.yaml
+2024-03-25 17:44:31,365 INFO    wandb-upload_2:32212 [upload_job.py:push():131] Uploaded file C:\Users\dadou\Documents\Github\Advanced-Programming\Strategies\wandb\run-20240325_174340-tw0y0dnu\files\requirements.txt
+2024-03-25 17:44:31,615 INFO    wandb-upload_3:32212 [upload_job.py:push():131] Uploaded file C:\Users\dadou\Documents\Github\Advanced-Programming\Strategies\wandb\run-20240325_174340-tw0y0dnu\files\wandb-summary.json
+2024-03-25 17:44:31,624 DEBUG   HandlerThread:32212 [handler.py:handle_request():146] handle_request: poll_exit
+2024-03-25 17:44:31,624 DEBUG   SenderThread:32212 [sender.py:send_request():405] send_request: poll_exit
+2024-03-25 17:44:32,144 INFO    wandb-upload_1:32212 [upload_job.py:push():131] Uploaded file C:\Users\dadou\Documents\Github\Advanced-Programming\Strategies\wandb\run-20240325_174340-tw0y0dnu\files\output.log
+2024-03-25 17:44:32,353 INFO    Thread-15 (_thread_body):32212 [sender.py:transition_state():613] send defer: 11
+2024-03-25 17:44:32,353 DEBUG   HandlerThread:32212 [handler.py:handle_request():146] handle_request: defer
+2024-03-25 17:44:32,353 INFO    HandlerThread:32212 [handler.py:handle_request_defer():172] handle defer: 11
+2024-03-25 17:44:32,353 DEBUG   SenderThread:32212 [sender.py:send_request():405] send_request: defer
+2024-03-25 17:44:32,354 INFO    SenderThread:32212 [sender.py:send_request_defer():609] handle sender defer: 11
+2024-03-25 17:44:32,354 INFO    SenderThread:32212 [file_pusher.py:join():178] waiting for file pusher
+2024-03-25 17:44:32,354 INFO    SenderThread:32212 [sender.py:transition_state():613] send defer: 12
+2024-03-25 17:44:32,354 DEBUG   HandlerThread:32212 [handler.py:handle_request():146] handle_request: defer
+2024-03-25 17:44:32,354 INFO    HandlerThread:32212 [handler.py:handle_request_defer():172] handle defer: 12
+2024-03-25 17:44:32,355 DEBUG   SenderThread:32212 [sender.py:send_request():405] send_request: defer
+2024-03-25 17:44:32,355 INFO    SenderThread:32212 [sender.py:send_request_defer():609] handle sender defer: 12
+2024-03-25 17:44:32,355 INFO    SenderThread:32212 [file_stream.py:finish():595] file stream finish called
+2024-03-25 17:44:32,503 INFO    SenderThread:32212 [file_stream.py:finish():599] file stream finish is done
+2024-03-25 17:44:32,503 INFO    SenderThread:32212 [sender.py:transition_state():613] send defer: 13
+2024-03-25 17:44:32,503 DEBUG   HandlerThread:32212 [handler.py:handle_request():146] handle_request: defer
+2024-03-25 17:44:32,503 INFO    HandlerThread:32212 [handler.py:handle_request_defer():172] handle defer: 13
+2024-03-25 17:44:32,504 DEBUG   SenderThread:32212 [sender.py:send_request():405] send_request: defer
+2024-03-25 17:44:32,504 INFO    SenderThread:32212 [sender.py:send_request_defer():609] handle sender defer: 13
+2024-03-25 17:44:32,504 INFO    SenderThread:32212 [sender.py:transition_state():613] send defer: 14
+2024-03-25 17:44:32,504 DEBUG   HandlerThread:32212 [handler.py:handle_request():146] handle_request: defer
+2024-03-25 17:44:32,505 DEBUG   SenderThread:32212 [sender.py:send():378] send: final
+2024-03-25 17:44:32,505 INFO    HandlerThread:32212 [handler.py:handle_request_defer():172] handle defer: 14
+2024-03-25 17:44:32,505 DEBUG   SenderThread:32212 [sender.py:send():378] send: footer
+2024-03-25 17:44:32,505 DEBUG   SenderThread:32212 [sender.py:send_request():405] send_request: defer
+2024-03-25 17:44:32,505 INFO    SenderThread:32212 [sender.py:send_request_defer():609] handle sender defer: 14
+2024-03-25 17:44:32,505 DEBUG   HandlerThread:32212 [handler.py:handle_request():146] handle_request: poll_exit
+2024-03-25 17:44:32,506 DEBUG   HandlerThread:32212 [handler.py:handle_request():146] handle_request: poll_exit
+2024-03-25 17:44:32,506 DEBUG   HandlerThread:32212 [handler.py:handle_request():146] handle_request: server_info
+2024-03-25 17:44:32,506 DEBUG   SenderThread:32212 [sender.py:send_request():405] send_request: poll_exit
+2024-03-25 17:44:32,506 DEBUG   HandlerThread:32212 [handler.py:handle_request():146] handle_request: get_summary
+2024-03-25 17:44:32,506 DEBUG   SenderThread:32212 [sender.py:send_request():405] send_request: poll_exit
+2024-03-25 17:44:32,507 DEBUG   HandlerThread:32212 [handler.py:handle_request():146] handle_request: sampled_history
+2024-03-25 17:44:32,507 DEBUG   SenderThread:32212 [sender.py:send_request():405] send_request: server_info
+2024-03-25 17:44:32,507 DEBUG   HandlerThread:32212 [handler.py:handle_request():146] handle_request: internal_messages
+2024-03-25 17:44:32,509 DEBUG   HandlerThread:32212 [handler.py:handle_request():146] handle_request: job_info
+2024-03-25 17:44:32,645 DEBUG   SenderThread:32212 [sender.py:send_request():405] send_request: job_info
+2024-03-25 17:44:32,645 INFO    MainThread:32212 [wandb_run.py:_footer_history_summary_info():3851] rendering history
+2024-03-25 17:44:32,645 INFO    MainThread:32212 [wandb_run.py:_footer_history_summary_info():3883] rendering summary
+2024-03-25 17:44:32,645 INFO    MainThread:32212 [wandb_run.py:_footer_sync_info():3810] logging synced files
+2024-03-25 17:44:32,646 DEBUG   HandlerThread:32212 [handler.py:handle_request():146] handle_request: shutdown
+2024-03-25 17:44:32,646 INFO    HandlerThread:32212 [handler.py:finish():869] shutting down handler
+2024-03-25 17:44:33,509 INFO    WriterThread:32212 [datastore.py:close():296] close: C:\Users\dadou\Documents\Github\Advanced-Programming\Strategies\wandb\run-20240325_174340-tw0y0dnu\run-tw0y0dnu.wandb
+2024-03-25 17:44:33,650 INFO    SenderThread:32212 [sender.py:finish():1521] shutting down sender
+2024-03-25 17:44:33,650 INFO    SenderThread:32212 [file_pusher.py:finish():172] shutting down file pusher
+2024-03-25 17:44:33,650 INFO    SenderThread:32212 [file_pusher.py:join():178] waiting for file pusher

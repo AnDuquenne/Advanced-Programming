@@ -31,9 +31,9 @@ Strategy:
     weights_path: "io/Transformers/Weights/"
     loss_path: "io/Transformers/Losses/"
     load_weights: True
-    batch_size: 64
+    batch_size: 128
     learning_rate: 0.001
-    nb_epochs: 25
+    nb_epochs: 500
     embedding_size: 8
     kernel_size: 5
     nb_heads: 8
@@ -46,3 +46,4 @@ Strategy:
     normalize: False
     debug: True
     debug_name: False
+    wandb: False

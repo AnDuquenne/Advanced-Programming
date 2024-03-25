@@ -61,6 +61,8 @@ DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
 
 MODEL_NAME = f"Transformers_ES_{EMBEDDING_SIZE}_NH_{NB_HEADS}_FE_{FORWARD_EXPANSION}_NBL_{NB_LAYERS}"
 
+WANDB = config['Strategy']['Transformers']['wandb']
+
 
 class TimeSeriesDataframe(Dataset):
     """
@@ -120,7 +122,8 @@ class TimeSeriesTransformerForecaster(nn.Module):
         # 1. Embedding
         self.embedding = EmbeddingLayer(
             n_features=n_features,
-            embedding_size=embedding_size,
+            embedding_size=n_features,
+            # embedding_size=embedding_size,
             type_="duplicate"
         )
 
@@ -177,19 +180,19 @@ class TimeSeriesTransformerForecaster(nn.Module):
         if self.DEBUG:
             print_size("x_transformer_encoded", x)
 
-        # x = self.re1(self.fc_decoder_1(x))
-        #
-        # x = self.re2(self.fc_decoder_2(x))
+        x = x.permute(1, 0, 2)
+
+        if self.DEBUG:
+            print_size("x_permuted", x)
+
+        x = self.re1(self.fc_decoder_1(x))
+
+        x = self.re2(self.fc_decoder_2(x))
 
         x = self.fc_decoder_3(x)
 
         if self.DEBUG:
             print_size("x_fc_decoded", x)
-
-        x = x.permute(1, 2, 0)
-
-        if self.DEBUG:
-            print_size("x_permuted", x)
 
         return x
 
@@ -339,7 +342,7 @@ if __name__ == '__main__':
     # ------------------------------------------------------------------------ #
 
     trainer = Trainer(train_loader, test_loader, model, optimizer, criterion, DEVICE, NB_EPOCHS,
-                      save_path_loss, save_path_weights, MODEL_NAME, DEBUG)
+                      save_path_loss, save_path_weights, MODEL_NAME, DEBUG, WANDB)
 
     trainer.train()
 

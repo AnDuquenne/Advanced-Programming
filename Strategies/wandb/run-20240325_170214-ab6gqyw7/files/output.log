@@ -1,0 +1,81 @@
+  0%|          | 0/75 [00:00<?, ?it/s]C:\Users\dadou\anaconda3\envs\Advanced-Programming\Lib\site-packages\torch\nn\functional.py:5476: UserWarning: 1Torch was not compiled with flash attention. (Triggered internally at ..\aten\src\ATen\native\transformers\cuda\sdp_utils.cpp:263.)
+  attn_output = scaled_dot_product_attention(q, k, v, attn_mask, dropout_p, is_causal)
+C:\Users\dadou\anaconda3\envs\Advanced-Programming\Lib\site-packages\torch\nn\modules\loss.py:535: UserWarning: Using a target size (torch.Size([128, 1, 10])) that is different to the input size (torch.Size([128, 10, 1])). This will likely lead to incorrect results due to broadcasting. Please ensure they have the same size.
+  return F.mse_loss(input, target, reduction=self.reduction)
+C:\Users\dadou\anaconda3\envs\Advanced-Programming\Lib\site-packages\torch\nn\modules\loss.py:535: UserWarning: Using a target size (torch.Size([19, 1, 10])) that is different to the input size (torch.Size([19, 10, 1])). This will likely lead to incorrect results due to broadcasting. Please ensure they have the same size.
+  return F.mse_loss(input, target, reduction=self.reduction)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+100%|██████████| 75/75 [07:06<00:00,  5.69s/it]

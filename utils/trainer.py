@@ -7,10 +7,13 @@ import wandb
 
 class Trainer:
     def __init__(self, train_loader, test_loader, model, optimizer, criterion, device, n_epoch,
-                 save_path_loss, save_path_weights, model_name, debug):
+                 save_path_loss, save_path_weights, model_name, debug, wandb_=False):
 
-        # Initialize wandb
-        wandb.init(project="stock_forecasting", entity="anduquenne")
+        self.wandb_ = wandb_
+
+        if self.wandb_:
+            # Initialize wandb
+            wandb.init(project="stock_forecasting", entity="anduquenne")
 
         self.train_loader = train_loader
         self.test_loader = test_loader
@@ -47,9 +50,6 @@ class Trainer:
                 signal = signal.float()
                 target = target.float()
 
-                # print("signal", signal.size())
-                # print("target", target.size())
-
                 # Move the data to the device
                 signal = signal.to(self.device)
                 target = target.to(self.device)
@@ -58,6 +58,8 @@ class Trainer:
                 self.optimizer.zero_grad()
                 # Make predictions
                 preds = self.model(signal.to(self.device))
+
+                preds = preds.transpose(1, 2)
 
                 loss = self.criterion(preds, target)
                 loss.backward()
@@ -89,12 +91,14 @@ class Trainer:
             epoch_train_loss[epoch] = np.mean(tmp_train_loss)
             epoch_test_loss[epoch] = np.mean(tmp_test_loss)
 
-            wandb.log({"train_loss": np.mean(tmp_train_loss)}, step=epoch)
-            wandb.log({"test_loss": np.mean(tmp_test_loss)}, step=epoch)
+            if self.wandb_:
+                wandb.log({"train_loss": np.mean(tmp_train_loss)}, step=epoch)
+                wandb.log({"test_loss": np.mean(tmp_test_loss)}, step=epoch)
 
             self.scheduler.step()
 
-        wandb.finish()
+        if self.wandb_:
+            wandb.finish()
 
         # Save the model
         torch.save(self.model.state_dict(), self.save_path_weights + self.name + ".pt")
