@@ -1,0 +1,27 @@
+  0%|          | 0/25 [00:00<?, ?it/s]C:\Users\dadou\anaconda3\envs\Advanced-Programming\Lib\site-packages\torch\nn\functional.py:5476: UserWarning: 1Torch was not compiled with flash attention. (Triggered internally at ..\aten\src\ATen\native\transformers\cuda\sdp_utils.cpp:263.)
+  attn_output = scaled_dot_product_attention(q, k, v, attn_mask, dropout_p, is_causal)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+100%|██████████| 25/25 [03:53<00:00,  9.32s/it]

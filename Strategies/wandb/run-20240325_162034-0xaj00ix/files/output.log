@@ -1,0 +1,21 @@
+  0%|          | 0/25 [00:00<?, ?it/s]
+Traceback (most recent call last):
+  File "C:\Users\dadou\Documents\Github\Advanced-Programming\Strategies\Transformer_strategy.py", line 344, in <module>
+    trainer.train()
+  File "C:\Users\dadou\Documents\Github\Advanced-Programming\utils\trainer.py", line 59, in train
+    preds = self.model(signal.to(self.device))
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\dadou\anaconda3\envs\Advanced-Programming\Lib\site-packages\torch\nn\modules\module.py", line 1511, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\dadou\anaconda3\envs\Advanced-Programming\Lib\site-packages\torch\nn\modules\module.py", line 1520, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\dadou\Documents\Github\Advanced-Programming\Strategies\Transformer_strategy.py", line 163, in forward
+    x = self.embedding_conv(x)
+        ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\dadou\anaconda3\envs\Advanced-Programming\Lib\site-packages\torch\nn\modules\module.py", line 1688, in __getattr__
+    raise AttributeError(f"'{type(self).__name__}' object has no attribute '{name}'")
+AttributeError: 'TimeSeriesTransformerForecaster' object has no attribute 'embedding_conv'
+[4mTime series transformer
+[33mx[39m --> (None, None, None):  torch.Size([64, 1, 10])

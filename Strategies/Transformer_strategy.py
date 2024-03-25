@@ -104,6 +104,8 @@ class TimeSeriesTransformerForecaster(nn.Module):
                  debug=False):
         super(TimeSeriesTransformerForecaster, self).__init__()
 
+        assert embedding_size % n_features == 0, "The embedding size must be a multiple of the number of features."
+
         self.DROPOUT = dropout
         self.N_FEATURES = n_features
         self.NHEAD = nhead
@@ -116,12 +118,11 @@ class TimeSeriesTransformerForecaster(nn.Module):
         self.EXPANSION = expansion
 
         # 1. Embedding
-        self.embedding_conv = nn.ConvTranspose1d(in_channels=self.N_FEATURES,
-                                                 out_channels=self.EMBEDDING_SIZE,
-                                                 kernel_size=self.KERNEL_SIZE,
-                                                 stride=1,
-                                                 padding=self.PADDING,
-                                                 bias=False)
+        self.embedding = EmbeddingLayer(
+            n_features=n_features,
+            embedding_size=embedding_size,
+            type_="duplicate"
+        )
 
         self.pos_encoder = PositionalEncoding(d_model=self.EMBEDDING_SIZE, dropout=self.DROPOUT, debug=self.DEBUG)
 
@@ -159,7 +160,7 @@ class TimeSeriesTransformerForecaster(nn.Module):
         if self.DEBUG:
             print_underlined("Time series transformer")
             print_size("x", x)
-        x = self.embedding_conv(x)
+        x = self.embedding(x)
 
         if self.DEBUG:
             print_size("x_deconv", x)
@@ -238,6 +239,38 @@ class PositionalEncoding(nn.Module):
 
         return self.dropout(x + self.pe[:x.size(0), :, :])
 
+
+class EmbeddingLayer(nn.Module):
+    def __init__(self, n_features, embedding_size, type_):
+        super(EmbeddingLayer, self).__init__()
+
+        self.N_FEATURES = n_features
+        self.EMBEDDING_SIZE = embedding_size
+        self.TYPE = type
+
+        kernel_size = 5
+        padding = 2
+        stride = 1
+
+        self.embedding_conv = nn.ConvTranspose1d(in_channels=n_features,
+                                                 out_channels=embedding_size,
+                                                 kernel_size=kernel_size,
+                                                 stride=stride,
+                                                 padding=padding,
+                                                 bias=False)
+
+    def forward(self, x):
+
+        if self.TYPE == "deconv":
+            x = self.embedding_conv(x)
+        elif self.TYPE == "duplicate":
+            # If only prices, the feature size is 1, we duplicate it embedding_size times
+            # If n_features different from 1, we duplicate the features so that ot matches the embedding size
+            if x.size(1) == 1:
+                x = x.repeat(1, self.EMBEDDING_SIZE, 1)
+            else:
+                x = x.repeat(1, self.EMBEDDING_SIZE / x.size(1), 1)
+        return x
 
 
 

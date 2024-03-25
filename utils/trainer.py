@@ -77,9 +77,9 @@ class Trainer:
 
                             preds_test = self.model(signal_test.to(self.device))
 
-                            print("signal", signal_test[0, :, :].cpu())
-                            print("preds", preds_test[0, :, :].cpu())
-                            print("targets", target_test[0, :, :].cpu())
+                            # print("signal", signal_test[0, :, :].cpu())
+                            # print("preds", preds_test[0, :, :].cpu())
+                            # print("targets", target_test[0, :, :].cpu())
 
                             loss_test = self.criterion(preds_test, target_test)
                             tmp_test_loss[idx_test] = np.mean(loss_test.cpu().detach().item())
