@@ -147,8 +147,6 @@ class DataCleaner:
             if only_close:
                 df_numpy = df_numpy[:, 0].reshape(-1, 1)
 
-            # Remove first row
-            df_numpy = df_numpy[1:, :]
 
             # Transpose the numpy array
             df_numpy = df_numpy.T
@@ -161,8 +159,13 @@ class DataCleaner:
                 numpy_windowed_data[i, :, :] = df_numpy[:, i:i+window]
 
             # Create the torch tensors, for y we keep only the feature "Close"
-            X_torch = torch.tensor(numpy_windowed_data[:-look_forward, :, :]).transpose(1, 2)
-            y_torch = torch.tensor(numpy_windowed_data[look_forward:, 0, :]).transpose(1, 2)
+            # For the transformer layers we need (S, N, E)
+            # S: sequence length, N: batch size, E: number of features (or embedding size)
+            X_torch = torch.tensor(numpy_windowed_data[:-look_forward, :, :])
+            y_torch = torch.tensor(numpy_windowed_data[look_forward:, 0, :]).unsqueeze(1)
+
+            print("X_torch", X_torch.size())
+            print("y_torch", y_torch.size())
 
             # For DEBUG view
             # test_X = pd.DataFrame(dc(X_torch[35, :, :]).numpy())

@@ -1,0 +1,53 @@
+{
+    "os": "Windows-10-10.0.22635-SP0",
+    "python": "3.11.8",
+    "heartbeatAt": "2024-03-25T00:32:04.561207",
+    "startedAt": "2024-03-25T00:32:02.577822",
+    "docker": null,
+    "cuda": null,
+    "args": [],
+    "state": "running",
+    "program": "C:\\Users\\dadou\\Documents\\Github\\Advanced-Programming\\Strategies\\Transformer_strategy.py",
+    "codePathLocal": "Transformer_strategy.py",
+    "codePath": "Strategies\\Transformer_strategy.py",
+    "git": {
+        "remote": "https://github.com/AnDuquenne/Advanced-Programming.git",
+        "commit": "410c2956fe013fdc4b8bb1c965ce28ac126bb882"
+    },
+    "email": "andreas_duquenne@hotmail.com",
+    "root": "C:/Users/dadou/Documents/Github/Advanced-Programming",
+    "host": "DESKTOP-MM17CI9",
+    "username": "dadou",
+    "executable": "C:\\Users\\dadou\\anaconda3\\envs\\Advanced-Programming\\python.exe",
+    "cpu_count": 6,
+    "cpu_count_logical": 12,
+    "cpu_freq": {
+        "current": 3912.0,
+        "min": 0.0,
+        "max": 3912.0
+    },
+    "cpu_freq_per_core": [
+        {
+            "current": 3912.0,
+            "min": 0.0,
+            "max": 3912.0
+        }
+    ],
+    "disk": {
+        "/": {
+            "total": 465.07911682128906,
+            "used": 375.07123947143555
+        }
+    },
+    "gpu": "NVIDIA GeForce RTX 3060",
+    "gpu_count": 1,
+    "gpu_devices": [
+        {
+            "name": "NVIDIA GeForce RTX 3060",
+            "memory_total": 12884901888
+        }
+    ],
+    "memory": {
+        "total": 31.87225341796875
+    }
+}

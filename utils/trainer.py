@@ -43,12 +43,11 @@ class Trainer:
 
                 self.model.train()
 
-                # We want [window, batch_size, features]
-                signal = signal.permute(2, 0, 1)
-                target = target.permute(2, 0, 1)
-
                 signal = signal.float()
                 target = target.float()
+
+                # print("signal", signal.size())
+                # print("target", target.size())
 
                 # Move the data to the device
                 signal = signal.to(self.device)
@@ -70,9 +69,6 @@ class Trainer:
                         self.model.eval()
                         for idx_test, (signal_test, target_test) in enumerate(self.test_loader):
 
-                            signal_test = signal_test.permute(2, 0, 1)
-                            target_test = target_test.permute(2, 0, 1)
-
                             signal_test = signal_test.float()
                             target_test = target_test.float()
 
@@ -81,9 +77,9 @@ class Trainer:
 
                             preds_test = self.model(signal_test.to(self.device))
 
-                            print("signal", signal_test[:, 0, :].cpu())
-                            print("preds", preds_test[:, 0, :].cpu())
-                            print("targets", target_test[:, 0, :].cpu())
+                            print("signal", signal_test[0, :, :].cpu())
+                            print("preds", preds_test[0, :, :].cpu())
+                            print("targets", target_test[0, :, :].cpu())
 
                             loss_test = self.criterion(preds_test, target_test)
                             tmp_test_loss[idx_test] = np.mean(loss_test.cpu().detach().item())

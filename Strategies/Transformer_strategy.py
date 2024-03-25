@@ -14,6 +14,7 @@ import yaml
 from tqdm import tqdm
 
 from utils.trainer import Trainer
+from utils.utils import train_test_split_custom
 
 from torch.utils.data import Dataset, DataLoader
 
@@ -73,7 +74,7 @@ class TimeSeriesDataframe(Dataset):
         self.y = y
 
     def __len__(self):
-        return len(self.X)
+        return self.X.size(0)
 
     def __getitem__(self, idx):
         return self.X[idx], self.y[idx]
@@ -155,25 +156,39 @@ class TimeSeriesTransformerForecaster(nn.Module):
 
         assert l_out == x.size(0), "L_out must match the input signal size."
 
-        # Need [batch_size, channels_in, signal_length]
-        # [Signal_length, Batch_size, Features] -> [Batch_size, Features, Signal_length]
-        x = x.permute(1, 2, 0)
-
+        if self.DEBUG:
+            print_underlined("Time series transformer")
+            print_size("x", x)
         x = self.embedding_conv(x)
 
-        # Need [signal_length, batch_size, features]
-        # [Batch_size, Channels_out=features, Signal_length] -> [Signal_length, Batch_size, Features]
+        if self.DEBUG:
+            print_size("x_deconv", x)
+
         x = x.permute(2, 0, 1)
 
         x = self.pos_encoder(x)
 
+        if self.DEBUG:
+            print_size("x_permuted and pos_encoded", x)
+
         x = self.transformer_encoder(x)
 
-        x = self.re1(self.fc_decoder_1(x))
+        if self.DEBUG:
+            print_size("x_transformer_encoded", x)
 
-        x = self.re2(self.fc_decoder_2(x))
+        # x = self.re1(self.fc_decoder_1(x))
+        #
+        # x = self.re2(self.fc_decoder_2(x))
 
         x = self.fc_decoder_3(x)
+
+        if self.DEBUG:
+            print_size("x_fc_decoded", x)
+
+        x = x.permute(1, 2, 0)
+
+        if self.DEBUG:
+            print_size("x_permuted", x)
 
         return x
 
@@ -218,10 +233,10 @@ class PositionalEncoding(nn.Module):
                 self.pe.names = ['batch_size', 'features', 'one_dim']
             print_size("x", x)
             print_size("pe", self.pe)
-            print_size("pe_resized", self.pe[:x.size(0), :])
-            print_size("x + pe_resized", x + self.pe[:x.size(0), :])
+            print_size("pe_resized", self.pe[:x.size(0), :, :])
+            print_size("x + pe_resized", x + self.pe[:x.size(0), :, :])
 
-        return self.dropout(x + self.pe[:x.size(0), :])
+        return self.dropout(x + self.pe[:x.size(0), :, :])
 
 
 
@@ -233,10 +248,7 @@ if __name__ == '__main__':
     # ------------------------------------------------------------------------ #
 
     # Split the data
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
-    y_train = y_train.unsqueeze(1)
-    y_test = y_test.unsqueeze(1)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, train_size=0.8, random_state=42)
 
     if DEBUG:
         # Name the dimensions
