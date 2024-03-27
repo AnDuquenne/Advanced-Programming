@@ -1,0 +1,61 @@
+  0%|          | 0/350 [00:00<?, ?it/s]C:\Users\dadou\anaconda3\envs\Advanced-Programming\Lib\site-packages\torch\nn\functional.py:5476: UserWarning: 1Torch was not compiled with flash attention. (Triggered internally at ..\aten\src\ATen\native\transformers\cuda\sdp_utils.cpp:263.)
+  attn_output = scaled_dot_product_attention(q, k, v, attn_mask, dropout_p, is_causal)
+C:\Users\dadou\anaconda3\envs\Advanced-Programming\Lib\site-packages\torch\nn\modules\loss.py:535: UserWarning: Using a target size (torch.Size([512, 1, 10])) that is different to the input size (torch.Size([512, 10, 1])). This will likely lead to incorrect results due to broadcasting. Please ensure they have the same size.
+  return F.mse_loss(input, target, reduction=self.reduction)
+C:\Users\dadou\anaconda3\envs\Advanced-Programming\Lib\site-packages\torch\nn\modules\loss.py:535: UserWarning: Using a target size (torch.Size([275, 1, 10])) that is different to the input size (torch.Size([275, 10, 1])). This will likely lead to incorrect results due to broadcasting. Please ensure they have the same size.
+  return F.mse_loss(input, target, reduction=self.reduction)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 13%|█▎        | 46/350 [02:02<13:29,  2.66s/it]
+Traceback (most recent call last):
+  File "C:\Users\dadou\Documents\Github\Advanced-Programming\Strategies\Transformer_strategy.py", line 418, in <module>
+    trainer.train()
+  File "C:\Users\dadou\Documents\Github\Advanced-Programming\utils\trainer.py", line 85, in train
+    loss.backward()
+  File "C:\Users\dadou\anaconda3\envs\Advanced-Programming\Lib\site-packages\torch\_tensor.py", line 522, in backward
+    torch.autograd.backward(
+  File "C:\Users\dadou\anaconda3\envs\Advanced-Programming\Lib\site-packages\torch\autograd\__init__.py", line 266, in backward
+    Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+KeyboardInterrupt

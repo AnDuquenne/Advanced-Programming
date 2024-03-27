@@ -1,0 +1,28 @@
+2024-03-26 22:57:39,928 INFO    MainThread:276744 [wandb_setup.py:_flush():76] Current SDK version is 0.16.4
+2024-03-26 22:57:39,928 INFO    MainThread:276744 [wandb_setup.py:_flush():76] Configure stats pid to 276744
+2024-03-26 22:57:39,928 INFO    MainThread:276744 [wandb_setup.py:_flush():76] Loading settings from C:\Users\dadou\.config\wandb\settings
+2024-03-26 22:57:39,928 INFO    MainThread:276744 [wandb_setup.py:_flush():76] Loading settings from C:\Users\dadou\Documents\Github\Advanced-Programming\Strategies\wandb\settings
+2024-03-26 22:57:39,928 INFO    MainThread:276744 [wandb_setup.py:_flush():76] Loading settings from environment variables: {}
+2024-03-26 22:57:39,928 INFO    MainThread:276744 [wandb_setup.py:_flush():76] Applying setup settings: {'_disable_service': False}
+2024-03-26 22:57:39,929 INFO    MainThread:276744 [wandb_setup.py:_flush():76] Inferring run settings from compute environment: {'program_relpath': 'Strategies\\Transformer_strategy.py', 'program_abspath': 'C:\\Users\\dadou\\Documents\\Github\\Advanced-Programming\\Strategies\\Transformer_strategy.py', 'program': 'C:\\Users\\dadou\\Documents\\Github\\Advanced-Programming\\Strategies\\Transformer_strategy.py'}
+2024-03-26 22:57:39,929 INFO    MainThread:276744 [wandb_init.py:_log_setup():526] Logging user logs to C:\Users\dadou\Documents\Github\Advanced-Programming\Strategies\wandb\run-20240326_225739-y8i45n7w\logs\debug.log
+2024-03-26 22:57:39,930 INFO    MainThread:276744 [wandb_init.py:_log_setup():527] Logging internal logs to C:\Users\dadou\Documents\Github\Advanced-Programming\Strategies\wandb\run-20240326_225739-y8i45n7w\logs\debug-internal.log
+2024-03-26 22:57:39,930 INFO    MainThread:276744 [wandb_init.py:init():566] calling init triggers
+2024-03-26 22:57:39,930 INFO    MainThread:276744 [wandb_init.py:init():573] wandb.init called with sweep_config: {}
+config: {}
+2024-03-26 22:57:39,930 INFO    MainThread:276744 [wandb_init.py:init():616] starting backend
+2024-03-26 22:57:39,930 INFO    MainThread:276744 [wandb_init.py:init():620] setting up manager
+2024-03-26 22:57:39,933 INFO    MainThread:276744 [backend.py:_multiprocessing_setup():105] multiprocessing start_methods=spawn, using: spawn
+2024-03-26 22:57:39,935 INFO    MainThread:276744 [wandb_init.py:init():628] backend started and connected
+2024-03-26 22:57:39,942 INFO    MainThread:276744 [wandb_init.py:init():720] updated telemetry
+2024-03-26 22:57:39,969 INFO    MainThread:276744 [wandb_init.py:init():753] communicating run to backend with 90.0 second timeout
+2024-03-26 22:57:40,516 INFO    MainThread:276744 [wandb_run.py:_on_init():2262] communicating current version
+2024-03-26 22:57:40,863 INFO    MainThread:276744 [wandb_run.py:_on_init():2271] got version response upgrade_message: "wandb version 0.16.5 is available!  To upgrade, please run:\n $ pip install wandb --upgrade"
+
+2024-03-26 22:57:40,863 INFO    MainThread:276744 [wandb_init.py:init():804] starting run threads in backend
+2024-03-26 22:57:41,189 INFO    MainThread:276744 [wandb_run.py:_console_start():2241] atexit reg
+2024-03-26 22:57:41,189 INFO    MainThread:276744 [wandb_run.py:_redirect():2096] redirect: wrap_raw
+2024-03-26 22:57:41,189 INFO    MainThread:276744 [wandb_run.py:_redirect():2161] Wrapping output streams.
+2024-03-26 22:57:41,189 INFO    MainThread:276744 [wandb_run.py:_redirect():2186] Redirects installed.
+2024-03-26 22:57:41,189 INFO    MainThread:276744 [wandb_init.py:init():847] run started, returning control to user process
+2024-03-26 22:59:12,995 WARNING MsgRouterThr:276744 [router.py:message_loop():77] message_loop has been closed

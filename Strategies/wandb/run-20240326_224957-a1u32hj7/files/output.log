@@ -1,0 +1,16 @@
+Traceback (most recent call last):
+  File "C:\Users\dadou\Documents\Github\Advanced-Programming\Strategies\Transformer_strategy.py", line 417, in <module>
+    trainer.evaluate(X_test[300, :, :])
+  File "C:\Users\dadou\Documents\Github\Advanced-Programming\utils\trainer.py", line 152, in evaluate
+    preds = self.model(signal)
+            ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\dadou\anaconda3\envs\Advanced-Programming\Lib\site-packages\torch\nn\modules\module.py", line 1511, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\dadou\anaconda3\envs\Advanced-Programming\Lib\site-packages\torch\nn\modules\module.py", line 1520, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\dadou\Documents\Github\Advanced-Programming\Strategies\Transformer_strategy.py", line 181, in forward
+    x = x.permute(2, 0, 1)
+        ^^^^^^^^^^^^^^^^^^
+RuntimeError: permute(sparse_coo): number of dimensions in the tensor input does not match the length of the desired ordering of dimensions i.e. input.dim() = 2 is not equal to len(dims) = 3

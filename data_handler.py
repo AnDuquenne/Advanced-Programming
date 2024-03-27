@@ -85,10 +85,6 @@ class DataCleaner:
 
             df_numpy = dc(df).to_numpy()
 
-            # # Minmaxscaler to scale the data expect the "Close" column
-            # scaler = MinMaxScaler(feature_range=(-1, 1))
-            # df_numpy[1:, :] = scaler.fit_transform(df_numpy[1:, :])
-
             X_torch = torch.zeros(df_numpy.shape[0] - window, df_numpy.shape[1] * window)
             for i in range(df_numpy.shape[1]):
                 for j in range(window):
@@ -126,7 +122,8 @@ class DataCleaner:
             torch.save(X_torch, self.save_neural_path + file.replace('.csv', '_X.pt'))
             torch.save(y_torch, self.save_neural_path + file.replace('.csv', '_y.pt'))
 
-    def prepare_dataframe_transformers(self, window, look_forward=1, log_close=False, close_returns=False, only_close=False):
+    def prepare_dataframe_transformers(self, window, look_forward=1,
+                                       log_close=False, close_returns=False, only_close=False):
         assert look_forward < window, "The look_forward parameter must be less than the window parameter."
 
         for file in tqdm(self.files):
@@ -134,15 +131,21 @@ class DataCleaner:
             df = df[['date', 'close', 'MACD', 'Signal Line', 'Histogram', 'RSI', 'Stochastic RSI', 'DPO', 'CC']]
             df.set_index('date', inplace=True)
 
-            df_numpy = dc(df).to_numpy()
+            df['MACD'] /= df['MACD'].max(); df['MACD'] += 1
+            df['Signal Line'] /= df['Signal Line'].max(); df['Signal Line'] += 1
+            df['Histogram'] /= df['Histogram'].max(); df['Histogram'] += 1
+            df['RSI'] /= df['RSI'].max(); df['RSI'] += 1
+            df['Stochastic RSI'] /= df['Stochastic RSI'].max(); df['Stochastic RSI'] += 1
+            df['DPO'] /= df['DPO'].max(); df['DPO'] += 1
+            df['CC'] /= df['CC'].max(); df['CC'] += 1
 
-            # # Normalize the data except the "Close" column
-            # scaler = MinMaxScaler(feature_range=(-1, 1))
-            # df_numpy[:, 1:] = scaler.fit_transform(df_numpy[:, 1:])
+            df_numpy = dc(df).to_numpy()
 
             if log_close:
                 # Transform the closing prices to log prices
-                df_numpy[:, 0] = np.log(df_numpy[:, 0])
+                # df_numpy[:, 0] = np.log(df_numpy[:, 0])
+                # Normalize the closing prices
+                df_numpy[:, 0] = df_numpy[:, 0] / df_numpy[:, 0].max()
 
                 if close_returns:
                     # Calculate the returns
@@ -169,8 +172,8 @@ class DataCleaner:
             X_torch = torch.tensor(numpy_windowed_data[:-look_forward, :, :])
             y_torch = torch.tensor(numpy_windowed_data[look_forward:, 0, :]).unsqueeze(1)
 
-            print("X_torch", X_torch.size())
-            print("y_torch", y_torch.size())
+            # print("X_torch", X_torch.size())
+            # print("y_torch", y_torch.size())
 
             # For DEBUG view
             # test_X = pd.DataFrame(dc(X_torch[35, :, :]).numpy())

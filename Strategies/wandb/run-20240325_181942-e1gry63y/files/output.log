@@ -1,0 +1,14 @@
+  0%|          | 0/250 [00:00<?, ?it/s]C:\Users\dadou\anaconda3\envs\Advanced-Programming\Lib\site-packages\torch\nn\functional.py:5476: UserWarning: 1Torch was not compiled with flash attention. (Triggered internally at ..\aten\src\ATen\native\transformers\cuda\sdp_utils.cpp:263.)
+  attn_output = scaled_dot_product_attention(q, k, v, attn_mask, dropout_p, is_causal)
+C:\Users\dadou\anaconda3\envs\Advanced-Programming\Lib\site-packages\torch\nn\modules\loss.py:535: UserWarning: Using a target size (torch.Size([512, 1, 10])) that is different to the input size (torch.Size([512, 10, 1])). This will likely lead to incorrect results due to broadcasting. Please ensure they have the same size.
+  return F.mse_loss(input, target, reduction=self.reduction)
+C:\Users\dadou\anaconda3\envs\Advanced-Programming\Lib\site-packages\torch\nn\modules\loss.py:535: UserWarning: Using a target size (torch.Size([163, 1, 10])) that is different to the input size (torch.Size([163, 10, 1])). This will likely lead to incorrect results due to broadcasting. Please ensure they have the same size.
+  return F.mse_loss(input, target, reduction=self.reduction)
+  0%|          | 1/250 [00:35<2:29:16, 35.97s/it]
+Traceback (most recent call last):
+  File "C:\Users\dadou\Documents\Github\Advanced-Programming\Strategies\Transformer_strategy.py", line 347, in <module>
+    trainer.train()
+  File "C:\Users\dadou\Documents\Github\Advanced-Programming\utils\trainer.py", line 68, in train
+    tmp_train_loss[idx] = np.mean(loss.cpu().detach().item())
+                                  ^^^^^^^^^^
+KeyboardInterrupt

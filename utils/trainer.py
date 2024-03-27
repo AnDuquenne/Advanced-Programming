@@ -1,13 +1,20 @@
 import numpy as np
 import torch
 
+import matplotlib.pyplot as plt
+
+import datetime
+
 from tqdm import tqdm
 
 import wandb
 
+from utils.utils import mkdir_save_model, log_gradient_norms
+
+
 class Trainer:
-    def __init__(self, train_loader, test_loader, model, optimizer, criterion, device, n_epoch,
-                 save_path_loss, save_path_weights, model_name, debug, wandb_=False):
+    def __init__(self, train_loader, test_loader, model, optimizer, criterion, scheduler, device, n_epoch,
+                 save_path_loss, save_path_weights, model_name, debug, save_path, wandb_=False):
 
         self.wandb_ = wandb_
 
@@ -20,7 +27,7 @@ class Trainer:
         self.model = model
 
         self.optimizer = optimizer
-        self.scheduler = torch.optim.lr_scheduler.StepLR(self.optimizer, 1.0, gamma=0.95)
+        self.scheduler = scheduler
         self.criterion = criterion
         self.device = device
 
@@ -32,11 +39,19 @@ class Trainer:
         self.name = model_name
         self.debug = debug
 
+        timestamp = str(datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S"))
+        self.save_path = save_path + "/" + timestamp
+
     def train(self):
+
+        mkdir_save_model(self.save_path)
 
         # Initialize the loss history
         epoch_train_loss = np.zeros((self.n_epoch, 1))
         epoch_test_loss = np.zeros((self.n_epoch, 1))
+
+        # Initialize the lr history
+        epoch_lr = np.zeros((self.n_epoch, 1))
 
         for epoch in tqdm(range(self.n_epoch)):
 
@@ -62,7 +77,14 @@ class Trainer:
                 preds = preds.transpose(1, 2)
 
                 loss = self.criterion(preds, target)
+
+                if self.debug:
+                    print("signal", signal.size(), signal[0, :, :].cpu())
+                    print("preds", preds.size(), preds[0, :, :].cpu())
+                    print("targets", target.size(), target[0, :, :].cpu())
+
                 loss.backward()
+                torch.nn.utils.clip_grad_norm_(self.model.parameters(), 0.7)
                 self.optimizer.step()
 
                 tmp_train_loss[idx] = np.mean(loss.cpu().detach().item())
@@ -80,29 +102,72 @@ class Trainer:
 
                             preds_test = self.model(signal_test.to(self.device))
 
-                            if self.debug:
-                                print("signal", signal_test[0, :, :].cpu())
-                                print("preds", preds_test[0, :, :].cpu())
-                                print("targets", target_test[0, :, :].cpu())
+                            # if self.debug:
+                            #     print("signal", signal_test[0, :, :].cpu())
+                            #     print("preds", preds_test[0, :, :].cpu())
+                            #     print("targets", target_test[0, :, :].cpu())
 
                             loss_test = self.criterion(preds_test, target_test)
                             tmp_test_loss[idx_test] = np.mean(loss_test.cpu().detach().item())
 
+                if self.wandb_:
+                    total_norm = log_gradient_norms(self.model)
+                    wandb.log({"Gradient Norm": total_norm}, step=epoch)
+
             epoch_train_loss[epoch] = np.mean(tmp_train_loss)
             epoch_test_loss[epoch] = np.mean(tmp_test_loss)
+            epoch_lr[epoch] = self.optimizer.param_groups[0]['lr']
 
-            if self.wandb_ and epoch != 0:
+            # Save the model every 10 epochs (preventive measure)
+            if epoch % 10 == 0 and epoch != 0:
+                # Save the model
+                torch.save(self.model.state_dict(), self.save_path + "/weights/" + "weights.pt")
+
+                # save the loss
+                np.save(self.save_path + "/loss/" + "train_loss.npy", epoch_train_loss)
+                np.save(self.save_path + "/loss/" + "test_loss.npy", epoch_test_loss)
+
+            if self.wandb_ and epoch >= 5:
                 wandb.log({"train_loss": np.mean(tmp_train_loss)}, step=epoch)
                 wandb.log({"test_loss": np.mean(tmp_test_loss)}, step=epoch)
+                wandb.log({"lr": self.optimizer.param_groups[0]['lr']}, step=epoch)
 
             self.scheduler.step()
 
         if self.wandb_:
             wandb.finish()
 
-        # Save the model
-        torch.save(self.model.state_dict(), self.save_path_weights + self.name + ".pt")
+    def evaluate(self, data):
+        """
+        The function will take a batch of size n, of n sequences in temporal order, and will return the predictions of
+        the n-1 next periods.
 
-        # save the loss
-        np.save(self.save_path_loss + self.name + "_train_loss.npy", epoch_train_loss)
-        np.save(self.save_path_loss + self.name + "_test_loss.npy", epoch_test_loss)
+        In other words, taking the first value of each batch: in -> [t0, t1, ..., t-size_batch]     (signal)
+                                                              out -> [t1, t2, ..., t-size_batch+1]  (predictions)
+
+        Then plots [t1, ..., t-size_batch] for in and out
+        :param data:
+        :return:
+        """
+
+        self.model.eval()
+
+        with torch.no_grad():
+
+            signal = data.float().to(self.device)
+
+            preds = self.model(signal)
+
+            preds = preds.transpose(1, 2)
+
+            print("preds", preds.size())
+            print("signal", signal.size())
+
+            targets = signal[1:, :, 0]
+            preds = preds[:-1, :, -1]
+
+        plt.plot(targets.cpu().numpy(), label="targets")
+        plt.plot(preds.cpu().numpy(), label="predictions")
+        plt.legend()
+        plt.show()
+

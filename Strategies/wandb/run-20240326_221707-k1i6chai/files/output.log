@@ -1,0 +1,33 @@
+  0%|          | 0/350 [00:01<?, ?it/s]
+Traceback (most recent call last):
+  File "C:\Users\dadou\Documents\Github\Advanced-Programming\Strategies\Transformer_strategy.py", line 420, in <module>
+    trainer.train()
+  File "C:\Users\dadou\Documents\Github\Advanced-Programming\utils\trainer.py", line 69, in train
+    preds = self.model(signal.to(self.device))
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\dadou\anaconda3\envs\Advanced-Programming\Lib\site-packages\torch\nn\modules\module.py", line 1511, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\dadou\anaconda3\envs\Advanced-Programming\Lib\site-packages\torch\nn\modules\module.py", line 1520, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\dadou\Documents\Github\Advanced-Programming\Strategies\Transformer_strategy.py", line 184, in forward
+    x = self.pos_encoder(x)
+        ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\dadou\anaconda3\envs\Advanced-Programming\Lib\site-packages\torch\nn\modules\module.py", line 1511, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\dadou\anaconda3\envs\Advanced-Programming\Lib\site-packages\torch\nn\modules\module.py", line 1520, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\dadou\Documents\Github\Advanced-Programming\Strategies\Transformer_strategy.py", line 252, in forward
+    print_size("x + pe_resized", x + self.pe[:x.size(0), :, :])
+                                 ~~^~~~~~~~~~~~~~~~~~~~~~~~~~~
+RuntimeError: The size of tensor a (4) must match the size of tensor b (8) at non-singleton dimension 2
+[4mTime series transformer
+[33mx[39m --> (None, None, None):  torch.Size([512, 4, 10])
+[33mx_deconv[39m --> (None, None, None):  torch.Size([512, 4, 10])
+[4mPositional encoding
+[33mx[39m --> (None, None, None):  torch.Size([10, 512, 4])
+[33mpe[39m --> (None, None, None):  torch.Size([1000, 1, 8])
+[33mpe_resized[39m --> (None, None, None):  torch.Size([10, 1, 8])

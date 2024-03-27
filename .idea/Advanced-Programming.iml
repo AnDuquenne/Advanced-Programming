@@ -5,4 +5,11 @@
     <orderEntry type="jdk" jdkName="Advanced-Programming" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
+  <component name="TemplatesService">
+    <option name="TEMPLATE_FOLDERS">
+      <list>
+        <option value="$MODULE_DIR$/io/Transformers/Losses" />
+      </list>
+    </option>
+  </component>
 </module>

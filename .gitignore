@@ -7,3 +7,4 @@ Data/crypto-1min/btc-min1/neural_data_transformers/BTC-2020min_X.pt
 Data/crypto-1min/btc-min1/neural_data_transformers/BTC-2020min_y.pt
 Data/crypto-1min/btc-min1/neural_data_transformers/BTC-2021min_X.pt
 Data/crypto-1min/btc-min1/neural_data_transformers/BTC-2021min_y.pt
+Strategies/wandb/*

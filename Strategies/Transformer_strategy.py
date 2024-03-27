@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt
 
 from datetime import datetime
 
+import os
+
 import torch
 import torch.nn as nn
 
@@ -20,7 +22,9 @@ from torch.utils.data import Dataset, DataLoader
 
 from sklearn.model_selection import train_test_split
 
-from utils.utils import print_size, print_underlined
+from utils.utils import print_size, print_underlined, print_yellow, print_red, print_green
+
+from data_handler import DataCleaner
 
 # Load the configuration file
 with open('../io/config.yaml', 'r') as file:
@@ -30,12 +34,9 @@ with open('../io/config.yaml', 'r') as file:
 #                             Load the parameters                          #
 # ------------------------------------------------------------------------ #
 
-# Load the torch data
-X = torch.load('../' + config['Strategy']['Transformers']['data_path_X'])
-y = torch.load('../' + config['Strategy']['Transformers']['data_path_y'])
-
-save_path_weights = '../' + config['Strategy']['Transformers']['weights_path']
-save_path_loss = '../' + config['Strategy']['Transformers']['loss_path']
+SAVE_PATH_WEIGHTS = '../' + config['Strategy']['Transformers']['weights_path']
+SAVE_PATH_LOSS = '../' + config['Strategy']['Transformers']['loss_path']
+SAVE_PATH = '../' + config['Strategy']['Transformers']['save_path']
 
 DEBUG = config['Strategy']['Transformers']['debug']
 DEBUG_NAME = config['Strategy']['Transformers']['debug_name']
@@ -62,6 +63,15 @@ DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
 MODEL_NAME = f"Transformers_ES_{EMBEDDING_SIZE}_NH_{NB_HEADS}_FE_{FORWARD_EXPANSION}_NBL_{NB_LAYERS}"
 
 WANDB = config['Strategy']['Transformers']['wandb']
+
+# ------------------------------------------------------------------------ #
+#                    Load the params for Dataset making                    #
+# ------------------------------------------------------------------------ #
+WINDOW = config['Strategy']['Transformers']['dh_params']['window']
+LOOK_FORWARD = config['Strategy']['Transformers']['dh_params']['look_forward']
+LOG_CLOSE = config['Strategy']['Transformers']['dh_params']['log_close']
+CLOSE_RETURNS = config['Strategy']['Transformers']['dh_params']['close_returns']
+ONLY_CLOSE = config['Strategy']['Transformers']['dh_params']['only_close']
 
 
 class TimeSeriesDataframe(Dataset):
@@ -121,16 +131,16 @@ class TimeSeriesTransformerForecaster(nn.Module):
 
         # 1. Embedding
         self.embedding = EmbeddingLayer(
-            n_features=n_features,
-            embedding_size=n_features,
-            # embedding_size=embedding_size,
-            type_="duplicate"
+            n_features=self.N_FEATURES,
+            embedding_size=self.EMBEDDING_SIZE,
+            type_="fc_expansion"
         )
 
         self.pos_encoder = PositionalEncoding(d_model=self.EMBEDDING_SIZE, dropout=self.DROPOUT, debug=self.DEBUG)
 
         self.transformer_encoder = nn.TransformerEncoder(
-            nn.TransformerEncoderLayer(d_model=self.EMBEDDING_SIZE, nhead=self.NHEAD, dropout=self.DROPOUT),
+            nn.TransformerEncoderLayer(d_model=self.EMBEDDING_SIZE, nhead=self.NHEAD,
+                                       dropout=self.DROPOUT, batch_first=True),
             num_layers=self.NUM_LAYERS
         )
 
@@ -163,36 +173,32 @@ class TimeSeriesTransformerForecaster(nn.Module):
         if self.DEBUG:
             print_underlined("Time series transformer")
             print_size("x", x)
+
+        # Embedding
+        x = x.permute(0, 2, 1)
         x = self.embedding(x)
-
         if self.DEBUG:
-            print_size("x_deconv", x)
+            print_size("x permuted and embedding:", x)
 
-        x = x.permute(2, 0, 1)
-
+        # Positional encoding
+        x = x.permute(1, 0, 2)
         x = self.pos_encoder(x)
-
         if self.DEBUG:
             print_size("x_permuted and pos_encoded", x)
 
+        # Transformer encoder
+        x = x.permute(1, 0, 2)
         x = self.transformer_encoder(x)
-
         if self.DEBUG:
             print_size("x_transformer_encoded", x)
 
-        x = x.permute(1, 0, 2)
-
-        if self.DEBUG:
-            print_size("x_permuted", x)
-
-        x = self.re1(self.fc_decoder_1(x))
-
-        x = self.re2(self.fc_decoder_2(x))
+        # x = self.re1(self.fc_decoder_1(x))
+        #
+        # x = self.re2(self.fc_decoder_2(x))
 
         x = self.fc_decoder_3(x)
-
         if self.DEBUG:
-            print_size("x_fc_decoded", x)
+            print_size("x permuted and fc_decoded", x)
 
         return x
 
@@ -249,7 +255,7 @@ class EmbeddingLayer(nn.Module):
 
         self.N_FEATURES = n_features
         self.EMBEDDING_SIZE = embedding_size
-        self.TYPE = type
+        self.TYPE = type_
 
         kernel_size = 5
         padding = 2
@@ -262,10 +268,16 @@ class EmbeddingLayer(nn.Module):
                                                  padding=padding,
                                                  bias=False)
 
+        self.encoder_fc = nn.Linear(
+            in_features=n_features,
+            out_features=embedding_size
+        )
+        self.re = nn.ReLU()
+
     def forward(self, x):
 
-        if self.TYPE == "deconv":
-            x = self.embedding_conv(x)
+        if self.TYPE == "fc_expansion":
+            x = self.re(self.encoder_fc(x))
         elif self.TYPE == "duplicate":
             # If only prices, the feature size is 1, we duplicate it embedding_size times
             # If n_features different from 1, we duplicate the features so that ot matches the embedding size
@@ -280,8 +292,33 @@ class EmbeddingLayer(nn.Module):
 if __name__ == '__main__':
 
     # ------------------------------------------------------------------------ #
+    #                              Create the data                             #
+    # ------------------------------------------------------------------------ #
+    cleaner = DataCleaner('BTC', '../io/config.yaml')
+    cleaner.prepare_dataframe_transformers(
+        window=WINDOW,
+        look_forward=LOOK_FORWARD,
+        log_close=LOG_CLOSE,
+        close_returns=CLOSE_RETURNS,
+        only_close=ONLY_CLOSE,
+    )
+
+    cleaner = DataCleaner('ETH', '../io/config.yaml')
+    cleaner.prepare_dataframe_transformers(
+        window=WINDOW,
+        look_forward=LOOK_FORWARD,
+        log_close=LOG_CLOSE,
+        close_returns=CLOSE_RETURNS,
+        only_close=ONLY_CLOSE,
+    )
+
+    # ------------------------------------------------------------------------ #
     #                               Load the data                              #
     # ------------------------------------------------------------------------ #
+
+    # Load the torch data
+    X = torch.load('../' + config['Strategy']['Transformers']['data_path_X'])
+    y = torch.load('../' + config['Strategy']['Transformers']['data_path_y'])
 
     # Split the data
     X_train, X_test, y_train, y_test = train_test_split(X, y, train_size=0.8, random_state=42)
@@ -308,11 +345,13 @@ if __name__ == '__main__':
             y_test = y_test.rename(None)
 
     # ------------------------------------------------------------------------ #
-    #                               Define training                            #
+    #                                Define model                              #
     # ------------------------------------------------------------------------ #
 
+    n_features = X_train.size(1)
+
     model = TimeSeriesTransformerForecaster(
-        n_features=X_train.size(1),
+        n_features=n_features,
         embedding_size=EMBEDDING_SIZE,
         num_layers=NB_LAYERS,
         dropout=DROPOUT,
@@ -323,11 +362,44 @@ if __name__ == '__main__':
         kernel_size=KERNEL_SIZE
     ).to(DEVICE)
 
+    # ------------------------------------------------------------------------ #
+    #                               Load weights                               #
+    # ------------------------------------------------------------------------ #
+
+    # Procedure to load weights:
+    # 1. Check in the IO models if models are saved with the same parameters in the config file
+    # 2. If yes, load the weights for the most recent model
     if LOAD_WEIGHTS:
-        try:
-            model.load_state_dict(torch.load(save_path_weights + MODEL_NAME + ".pt"))
-        except:
-            print("No weights found")
+        print_underlined("Loading weights")
+        # Create a list of all folders in the 'SAVE_PATH' folder
+        folders = os.listdir(SAVE_PATH)
+        for folder in reversed(folders):
+            # try to open the config file in the folder
+            try:
+                with open(SAVE_PATH + folder + "/config.yaml", 'r') as file:
+                    config_folder = yaml.safe_load(file)
+                    if config_folder['Strategy']['Transformers']['embedding_size'] == EMBEDDING_SIZE and \
+                        config_folder['Strategy']['Transformers']['nb_heads'] == NB_HEADS and \
+                        config_folder['Strategy']['Transformers']['nb_encoder_layers'] == NB_LAYERS and \
+                        config_folder['Strategy']['Transformers']['forward_expansion'] == FORWARD_EXPANSION and \
+                        config_folder['Strategy']['Transformers']['padding'] == PADDING and \
+                        config_folder['Strategy']['Transformers']['kernel_size'] == KERNEL_SIZE and \
+                        config_folder['Strategy']['Transformers']['dropout'] == DROPOUT and \
+                        config_folder['Strategy']['Transformers']['dh_params']['window'] == WINDOW and \
+                        config_folder['Strategy']['Transformers']['dh_params']['look_forward'] == LOOK_FORWARD and \
+                        config_folder['Strategy']['Transformers']['dh_params']['log_close'] == LOG_CLOSE and \
+                        config_folder['Strategy']['Transformers']['dh_params']['close_returns'] == CLOSE_RETURNS and \
+                        config_folder['Strategy']['Transformers']['dh_params']['only_close'] == ONLY_CLOSE:
+                        # Load the weights
+                        model.load_state_dict(torch.load(SAVE_PATH + folder + "/weights/weights.pt"))
+                        print_green(f"Loaded weights from {folder}")
+                        break
+            except:
+                print_red("Failed to load the weights")
+
+    # ------------------------------------------------------------------------ #
+    #                               Define training                            #
+    # ------------------------------------------------------------------------ #
 
     # The data loader
     train_loader = DataLoader(TimeSeriesDataframe(X_train, y_train), batch_size=BATCH_SIZE, shuffle=True)
@@ -336,20 +408,15 @@ if __name__ == '__main__':
     # Define loss and optimizer
     criterion = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, 1, gamma=0.995)
 
     # ------------------------------------------------------------------------ #
     #                              Train and test                              #
     # ------------------------------------------------------------------------ #
 
-    trainer = Trainer(train_loader, test_loader, model, optimizer, criterion, DEVICE, NB_EPOCHS,
-                      save_path_loss, save_path_weights, MODEL_NAME, DEBUG, WANDB)
+    trainer = Trainer(train_loader, test_loader, model, optimizer, criterion, scheduler, DEVICE, NB_EPOCHS,
+                      SAVE_PATH_LOSS, SAVE_PATH_WEIGHTS, MODEL_NAME, DEBUG, SAVE_PATH, WANDB)
 
     trainer.train()
+    # trainer.evaluate(X_test[:300, :, :])
 
-    # # Load the loss
-    # train_loss_ = np.load("io/Transformers/Losses/Transformers_ES_200_NH_10_FE_4_NBL_8_train_loss.npy")
-    # test_loss_ = np.load("io/Transformers/Losses/Transformers_ES_200_NH_10_FE_4_NBL_8_test_loss.npy")
-    # # Plot the loss
-    # plt.plot(test_loss_)
-    # plt.plot(train_loss_)
-    # plt.show()
