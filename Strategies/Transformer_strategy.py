@@ -22,7 +22,7 @@ from torch.utils.data import Dataset, DataLoader
 
 from sklearn.model_selection import train_test_split
 
-from utils.utils import print_size, print_underlined, print_yellow, print_red, print_green
+from utils.utils import print_size, print_underlined, print_red, print_green, generate_square_subsequent_mask
 
 from data_handler import DataCleaner
 
@@ -69,6 +69,7 @@ WANDB = config['Strategy']['Transformers']['wandb']
 # ------------------------------------------------------------------------ #
 WINDOW = config['Strategy']['Transformers']['dh_params']['window']
 LOOK_FORWARD = config['Strategy']['Transformers']['dh_params']['look_forward']
+DECODER_HORIZON = config['Strategy']['Transformers']['dh_params']['decoder_horizon']
 LOG_CLOSE = config['Strategy']['Transformers']['dh_params']['log_close']
 CLOSE_RETURNS = config['Strategy']['Transformers']['dh_params']['close_returns']
 ONLY_CLOSE = config['Strategy']['Transformers']['dh_params']['only_close']
@@ -79,40 +80,37 @@ class TimeSeriesDataframe(Dataset):
     A class to create a time series dataframe.
     """
 
-    def __init__(self, X, y):
+    def __init__(self, X_encoder, X_decoder, y):
         super().__init__()
 
-        self.X = X
+        self.X_encoder = X_encoder
+        self.X_decoder = X_decoder
         self.y = y
 
     def __len__(self):
-        return self.X.size(0)
+        return self.X_encoder.size(0)
 
     def __getitem__(self, idx):
-        return self.X[idx], self.y[idx]
+        return self.X_encoder[idx], self.X_decoder[idx], self.y[idx]
 
 
 class TimeSeriesTransformerForecaster(nn.Module):
     """
     A class to create a transformer model for time series forecasting.
-
-    1. nn.ConvTranspose1d
-    ------------
-
-    Convolution for  embedding
-    [batch_size, in_channels, signal_length] -> [batch_size, out_channels, signal_length_out]
-    with L_out = (L_in - 1) * stride - 2 * padding + kernel_size (dilation = 1, output_padding = 0)
     """
 
     def __init__(self,
                  n_features,
-                 embedding_size=200,
+                 embedding_size,
+                 input_sequence_length,
+                 output_sequence_length,
                  num_layers=8,
                  expansion=4,
                  dropout=0.1,
                  kernel_size=5,
                  padding=25,
                  nhead=10,
+                 device="cuda:0",
                  debug=False):
         super(TimeSeriesTransformerForecaster, self).__init__()
 
@@ -120,6 +118,8 @@ class TimeSeriesTransformerForecaster(nn.Module):
 
         self.DROPOUT = dropout
         self.N_FEATURES = n_features
+        self.INPUT_SEQUENCE_LENGTH = input_sequence_length
+        self.OUTPUT_SEQUENCE_LENGTH = output_sequence_length
         self.NHEAD = nhead
         self.NUM_LAYERS = num_layers
         self.DEBUG = debug
@@ -128,10 +128,27 @@ class TimeSeriesTransformerForecaster(nn.Module):
         self.EMBEDDING_SIZE = embedding_size
         self.PADDING = padding
         self.EXPANSION = expansion
+        self.DEVICE = device
+
+        self.encoder_mask = generate_square_subsequent_mask(
+            dim1=self.OUTPUT_SEQUENCE_LENGTH,
+            dim2=self.INPUT_SEQUENCE_LENGTH
+        ).to(self.DEVICE)
+
+        self.target_mask = generate_square_subsequent_mask(
+            dim1=self.OUTPUT_SEQUENCE_LENGTH,
+            dim2=self.OUTPUT_SEQUENCE_LENGTH
+        ).to(self.DEVICE)
 
         # 1. Embedding
-        self.embedding = EmbeddingLayer(
+        self.embedding_encoder = EmbeddingLayer(
             n_features=self.N_FEATURES,
+            embedding_size=self.EMBEDDING_SIZE,
+            type_="fc_expansion"
+        )
+
+        self.embedding_decoder = EmbeddingLayer(
+            n_features=1,  # We only predict the closing price
             embedding_size=self.EMBEDDING_SIZE,
             type_="fc_expansion"
         )
@@ -144,63 +161,58 @@ class TimeSeriesTransformerForecaster(nn.Module):
             num_layers=self.NUM_LAYERS
         )
 
-        self.fc_decoder_1 = nn.Linear(self.EMBEDDING_SIZE, self.EMBEDDING_SIZE * self.EXPANSION)
-        self.re1 = nn.ReLU()
+        self.transformer_decoder = nn.TransformerDecoder(
+            nn.TransformerDecoderLayer(d_model=self.EMBEDDING_SIZE, nhead=self.NHEAD,
+                                       dropout=self.DROPOUT, batch_first=True),
+            num_layers=self.NUM_LAYERS
+        )
 
-        self.fc_decoder_2 = nn.Linear(self.EMBEDDING_SIZE * self.EXPANSION, self.EMBEDDING_SIZE)
-        self.re2 = nn.ReLU()
-
-        self.fc_decoder_3 = nn.Linear(self.EMBEDDING_SIZE, 1)
+        self.fc_decoder = nn.Linear(self.EMBEDDING_SIZE, 1)
 
         self.init_weights()
 
     def init_weights(self):
         init_range = 0.1
-        self.fc_decoder_1.bias.data.zero_()
-        self.fc_decoder_1.weight.data.uniform_(-init_range, init_range)
 
-        self.fc_decoder_2.bias.data.zero_()
-        self.fc_decoder_2.weight.data.uniform_(-init_range, init_range)
+        self.fc_decoder.bias.data.zero_()
+        self.fc_decoder.weight.data.uniform_(-init_range, init_range)
 
-        self.fc_decoder_3.bias.data.zero_()
-        self.fc_decoder_3.weight.data.uniform_(-init_range, init_range)
-
-    def forward(self, x):
-        l_out = (x.size(0) - 1) * self.STRIDE - 2 * self.PADDING + self.KERNEL_SIZE
-
-        assert l_out == x.size(0), "L_out must match the input signal size."
+    def forward(self, x_encoder, x_decoder):
+        # ------------------------------------------------------------------------ #
+        #                              Encoder part                                #
+        # ------------------------------------------------------------------------ #
 
         if self.DEBUG:
             print_underlined("Time series transformer")
-            print_size("x", x)
+            print_size("x_encoder", x_encoder)
 
         # Embedding
-        x = x.permute(0, 2, 1)
-        x = self.embedding(x)
+        x_encoder = self.embedding_encoder(x_encoder)
         if self.DEBUG:
-            print_size("x permuted and embedding:", x)
+            print_size("x_encoder permuted and embedding:", x_encoder)
 
         # Positional encoding
-        x = x.permute(1, 0, 2)
-        x = self.pos_encoder(x)
+        x_encoder = self.pos_encoder(x_encoder)
         if self.DEBUG:
-            print_size("x_permuted and pos_encoded", x)
+            print_size("x_encoder_permuted and pos_encoded", x_encoder)
 
         # Transformer encoder
-        x = x.permute(1, 0, 2)
-        x = self.transformer_encoder(x)
+        x_encoder = self.transformer_encoder(x_encoder)
         if self.DEBUG:
-            print_size("x_transformer_encoded", x)
+            print_size("x_encoder_transformer_encoded", x_encoder)
 
-        # x = self.re1(self.fc_decoder_1(x))
-        #
-        # x = self.re2(self.fc_decoder_2(x))
+        # ------------------------------------------------------------------------ #
+        #                              Decoder part                                #
+        # ------------------------------------------------------------------------ #
 
-        x = self.fc_decoder_3(x)
-        if self.DEBUG:
-            print_size("x permuted and fc_decoded", x)
+        x_decoder = self.embedding_decoder(x_decoder)
 
-        return x
+        x_decoder = self.transformer_decoder(x_decoder, x_encoder,
+                                             tgt_mask=self.target_mask, memory_mask=self.encoder_mask)
+
+        x_decoder = self.fc_decoder(x_decoder)
+
+        return x_decoder
 
 
 class PositionalEncoding(nn.Module):
@@ -274,6 +286,8 @@ class EmbeddingLayer(nn.Module):
         )
         self.re = nn.ReLU()
 
+        self.init_weights()
+
     def forward(self, x):
 
         if self.TYPE == "fc_expansion":
@@ -287,6 +301,11 @@ class EmbeddingLayer(nn.Module):
                 x = x.repeat(1, self.EMBEDDING_SIZE / x.size(1), 1)
         return x
 
+    def init_weights(self):
+        init_range = 0.1
+        self.encoder_fc.bias.data.zero_()
+        self.encoder_fc.weight.data.uniform_(-init_range, init_range)
+
 
 
 if __name__ == '__main__':
@@ -294,71 +313,71 @@ if __name__ == '__main__':
     # ------------------------------------------------------------------------ #
     #                              Create the data                             #
     # ------------------------------------------------------------------------ #
-    cleaner = DataCleaner('BTC', '../io/config.yaml')
-    cleaner.prepare_dataframe_transformers(
-        window=WINDOW,
-        look_forward=LOOK_FORWARD,
-        log_close=LOG_CLOSE,
-        close_returns=CLOSE_RETURNS,
-        only_close=ONLY_CLOSE,
-    )
-
-    cleaner = DataCleaner('ETH', '../io/config.yaml')
-    cleaner.prepare_dataframe_transformers(
-        window=WINDOW,
-        look_forward=LOOK_FORWARD,
-        log_close=LOG_CLOSE,
-        close_returns=CLOSE_RETURNS,
-        only_close=ONLY_CLOSE,
-    )
+    # cleaner = DataCleaner('BTC', '../io/config.yaml')
+    # cleaner.prepare_dataframe_transformers(
+    #     window=WINDOW,
+    #     look_forward=LOOK_FORWARD,
+    #     decoder_horizon=DECODER_HORIZON,
+    #     log_close=LOG_CLOSE,
+    #     close_returns=CLOSE_RETURNS,
+    #     only_close=ONLY_CLOSE,
+    # )
+    #
+    # cleaner = DataCleaner('ETH', '../io/config.yaml')
+    # cleaner.prepare_dataframe_transformers(
+    #     window=WINDOW,
+    #     look_forward=LOOK_FORWARD,
+    #     decoder_horizon=DECODER_HORIZON,
+    #     log_close=LOG_CLOSE,
+    #     close_returns=CLOSE_RETURNS,
+    #     only_close=ONLY_CLOSE,
+    # )
 
     # ------------------------------------------------------------------------ #
     #                               Load the data                              #
     # ------------------------------------------------------------------------ #
 
     # Load the torch data
-    X = torch.load('../' + config['Strategy']['Transformers']['data_path_X'])
+    X_encoder = torch.load('../' + config['Strategy']['Transformers']['data_path_X_encoder'])
+    X_decoder = torch.load('../' + config['Strategy']['Transformers']['data_path_X_decoder'])
     y = torch.load('../' + config['Strategy']['Transformers']['data_path_y'])
 
     # Split the data
-    X_train, X_test, y_train, y_test = train_test_split(X, y, train_size=0.8, random_state=42)
+    # X_encoder -> [N_windows, seq_len, n_features]
+    X_encoder_train, X_encoder_test, X_decoder_train, X_decoder_test, y_train, y_test =\
+        train_test_split_custom(X_encoder, X_decoder, y, train_size=0.8)
 
     if DEBUG:
         # Name the dimensions
         print_underlined("\n Data recovered from the folder")
 
-        if DEBUG_NAME:
-            X_train.names = ['n_observations', 'features', 'one_dim']
-            y_train.names = ['n_observations', 'features']
-            X_test.names = ['n_observations', 'features', 'one_dim']
-            y_test.names = ['n_observations', 'features']
-
-        print_size("X_train", X_train)
+        print_size("X_encoder_train", X_encoder_train)
+        print_size("X_encoder_test", X_encoder_test)
+        print_size("X_decoder_train", X_decoder_train)
+        print_size("X_decoder_test", X_decoder_test)
         print_size("y_train", y_train)
-        print_size("X_test", X_test)
         print_size("y_test", y_test)
-
-        if DEBUG_NAME:
-            X_train = X_train.rename(None)
-            y_train = y_train.rename(None)
-            X_test = X_test.rename(None)
-            y_test = y_test.rename(None)
 
     # ------------------------------------------------------------------------ #
     #                                Define model                              #
     # ------------------------------------------------------------------------ #
 
-    n_features = X_train.size(1)
+    n_features = X_encoder_train.size(2)
+    input_sequence_length = X_encoder_train.size(1)
+    output_sequence_length = X_decoder_train.size(1)
 
     model = TimeSeriesTransformerForecaster(
         n_features=n_features,
         embedding_size=EMBEDDING_SIZE,
+        input_sequence_length=input_sequence_length,
+        output_sequence_length=output_sequence_length,
         num_layers=NB_LAYERS,
         dropout=DROPOUT,
         nhead=NB_HEADS,
         expansion=FORWARD_EXPANSION,
         debug=DEBUG,
         padding=PADDING,
+        device=DEVICE,
         kernel_size=KERNEL_SIZE
     ).to(DEVICE)
 
@@ -402,8 +421,10 @@ if __name__ == '__main__':
     # ------------------------------------------------------------------------ #
 
     # The data loader
-    train_loader = DataLoader(TimeSeriesDataframe(X_train, y_train), batch_size=BATCH_SIZE, shuffle=True)
-    test_loader = DataLoader(TimeSeriesDataframe(X_test, y_test), batch_size=BATCH_SIZE, shuffle=False)
+    train_loader = DataLoader(TimeSeriesDataframe(X_encoder_train, X_decoder_train, y_train),
+                              batch_size=BATCH_SIZE, shuffle=True)
+    test_loader = DataLoader(TimeSeriesDataframe(X_encoder_test, X_decoder_test, y_test),
+                             batch_size=BATCH_SIZE, shuffle=False)
 
     # Define loss and optimizer
     criterion = nn.MSELoss()
@@ -418,5 +439,5 @@ if __name__ == '__main__':
                       SAVE_PATH_LOSS, SAVE_PATH_WEIGHTS, MODEL_NAME, DEBUG, SAVE_PATH, WANDB)
 
     trainer.train()
-    # trainer.evaluate(X_test[:300, :, :])
+    # trainer.evaluate(X_encoder_test[:300, :, :], X_decoder_test[:300, :, :])
 

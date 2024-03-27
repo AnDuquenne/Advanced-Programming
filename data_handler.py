@@ -122,7 +122,7 @@ class DataCleaner:
             torch.save(X_torch, self.save_neural_path + file.replace('.csv', '_X.pt'))
             torch.save(y_torch, self.save_neural_path + file.replace('.csv', '_y.pt'))
 
-    def prepare_dataframe_transformers(self, window, look_forward=1,
+    def prepare_dataframe_transformers(self, window, look_forward=1, decoder_horizon=1,
                                        log_close=False, close_returns=False, only_close=False):
         assert look_forward < window, "The look_forward parameter must be less than the window parameter."
 
@@ -143,9 +143,7 @@ class DataCleaner:
 
             if log_close:
                 # Transform the closing prices to log prices
-                # df_numpy[:, 0] = np.log(df_numpy[:, 0])
-                # Normalize the closing prices
-                df_numpy[:, 0] = df_numpy[:, 0] / df_numpy[:, 0].max()
+                df_numpy[:, 0] = np.log(df_numpy[:, 0])
 
                 if close_returns:
                     # Calculate the returns
@@ -159,28 +157,34 @@ class DataCleaner:
             # Transpose the numpy array
             df_numpy = df_numpy.T
 
-            # Create the numpy data array (n_samples, n_features, window)
+            # Create the numpy data array (nb of possible windows, n_features, window + look_forward)
             # It contains the original data and the technical indicators
-            numpy_windowed_data = np.zeros((df_numpy.shape[1] - window, df_numpy.shape[0], window))
+            numpy_windowed_data = np.zeros((df_numpy.shape[1] - (window + look_forward),
+                                            df_numpy.shape[0],
+                                            window + look_forward))
 
-            for i in range(df_numpy.shape[1] - window):
-                numpy_windowed_data[i, :, :] = df_numpy[:, i:i+window]
+            for i in range(df_numpy.shape[1] - (window + look_forward)):
+                numpy_windowed_data[i, :, :] = df_numpy[:, i:i+window+look_forward]
+
+            # Numpy windowed data is [nb of possible windows, nb of features, window size]
 
             # Create the torch tensors, for y we keep only the feature "Close"
             # For the transformer layers we need (S, N, E)
             # S: sequence length, N: batch size, E: number of features (or embedding size)
-            X_torch = torch.tensor(numpy_windowed_data[:-look_forward, :, :])
-            y_torch = torch.tensor(numpy_windowed_data[look_forward:, 0, :]).unsqueeze(1)
+            X_torch_encoder = torch.tensor(numpy_windowed_data[:, :, :(window-1)])
+            X_torch_decoder = torch.tensor(numpy_windowed_data[:, 0, (window-2):-look_forward]).unsqueeze(1)
+            y_torch = torch.tensor(numpy_windowed_data[:, 0, (window-1):]).unsqueeze(1)
 
-            # print("X_torch", X_torch.size())
-            # print("y_torch", y_torch.size())
-
-            # For DEBUG view
-            # test_X = pd.DataFrame(dc(X_torch[35, :, :]).numpy())
-            # test_y = pd.DataFrame(dc(y_torch[35, :]).numpy())
+            # Get [N_windows, seq_len, n_features]
+            X_torch_encoder = X_torch_encoder.transpose(1, 2)
+            X_torch_decoder = X_torch_decoder.transpose(1, 2)
+            y_torch = y_torch.transpose(1, 2)
 
             # Save the data as torch tensors
-            torch.save(X_torch, self.save_neural_path_transformers + file.replace('.csv', '_X.pt'))
+            torch.save(X_torch_encoder,
+                       self.save_neural_path_transformers + file.replace('.csv', '_X_encoder.pt'))
+            torch.save(X_torch_decoder,
+                       self.save_neural_path_transformers + file.replace('.csv', '_X_decoder.pt'))
             torch.save(y_torch, self.save_neural_path_transformers + file.replace('.csv', '_y.pt'))
 
 

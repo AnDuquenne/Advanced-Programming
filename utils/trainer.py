@@ -58,28 +58,29 @@ class Trainer:
             tmp_train_loss = np.zeros((len(self.train_loader), 1))
             tmp_test_loss = np.zeros((len(self.test_loader), 1))
 
-            for idx, (signal, target) in enumerate(self.train_loader):
+            for idx, (signal_encoder, signal_decoder, target) in enumerate(self.train_loader):
 
                 self.model.train()
 
-                signal = signal.float()
+                signal_encoder = signal_encoder.float()
+                signal_decoder = signal_decoder.float()
                 target = target.float()
 
                 # Move the data to the device
-                signal = signal.to(self.device)
+                signal_encoder = signal_encoder.to(self.device)
+                signal_decoder = signal_decoder.to(self.device)
                 target = target.to(self.device)
 
                 # Reset grad
                 self.optimizer.zero_grad()
                 # Make predictions
-                preds = self.model(signal.to(self.device))
-
-                preds = preds.transpose(1, 2)
+                preds = self.model(signal_encoder, signal_decoder).to(self.device)
 
                 loss = self.criterion(preds, target)
 
                 if self.debug:
-                    print("signal", signal.size(), signal[0, :, :].cpu())
+                    print("signal_encoder", signal_encoder.size(), signal_encoder[0, :, :].cpu())
+                    print("signal_decoder", signal_decoder.size(), signal_decoder[0, :, :].cpu())
                     print("preds", preds.size(), preds[0, :, :].cpu())
                     print("targets", target.size(), target[0, :, :].cpu())
 
@@ -92,15 +93,18 @@ class Trainer:
                 if idx == len(self.train_loader) - 1:
                     with torch.no_grad():
                         self.model.eval()
-                        for idx_test, (signal_test, target_test) in enumerate(self.test_loader):
+                        for idx_test, (signal_encoder_test, signal_decoder_test,
+                                       target_test) in enumerate(self.test_loader):
 
-                            signal_test = signal_test.float()
+                            signal_encoder_test = signal_encoder_test.float()
+                            signal_decoder_test = signal_decoder_test.float()
                             target_test = target_test.float()
 
-                            signal_test = signal_test.to(self.device)
+                            signal_encoder_test = signal_encoder_test.to(self.device)
+                            signal_decoder_test = signal_decoder_test.to(self.device)
                             target_test = target_test.to(self.device)
 
-                            preds_test = self.model(signal_test.to(self.device))
+                            preds_test = self.model(signal_encoder_test, signal_decoder_test)
 
                             # if self.debug:
                             #     print("signal", signal_test[0, :, :].cpu())
@@ -137,7 +141,7 @@ class Trainer:
         if self.wandb_:
             wandb.finish()
 
-    def evaluate(self, data):
+    def evaluate(self, signal_encoder_batch, signal_decoder_batch):
         """
         The function will take a batch of size n, of n sequences in temporal order, and will return the predictions of
         the n-1 next periods.
@@ -154,17 +158,17 @@ class Trainer:
 
         with torch.no_grad():
 
-            signal = data.float().to(self.device)
+            signal_encoder_batch = signal_encoder_batch.float().to(self.device)
+            signal_decoder_batch = signal_decoder_batch.float().to(self.device)
 
-            preds = self.model(signal)
-
-            preds = preds.transpose(1, 2)
+            preds = self.model(signal_encoder_batch, signal_decoder_batch)
 
             print("preds", preds.size())
-            print("signal", signal.size())
+            print("signal_encoder", signal_encoder_batch.size())
+            print("signal_decoder", signal_decoder_batch.size())
 
-            targets = signal[1:, :, 0]
-            preds = preds[:-1, :, -1]
+            targets = signal_decoder_batch[1:, -1, :]
+            preds = preds[:-1, -1, :]
 
         plt.plot(targets.cpu().numpy(), label="targets")
         plt.plot(preds.cpu().numpy(), label="predictions")
