@@ -123,7 +123,7 @@ class DataCleaner:
             torch.save(y_torch, self.save_neural_path + file.replace('.csv', '_y.pt'))
 
     def prepare_dataframe_transformers(self, window, look_forward=1, decoder_horizon=1,
-                                       log_close=False, close_returns=False, only_close=False):
+                                       log_close=False, close_returns=False, only_close=False, min_max_scale=False):
         assert look_forward < window, "The look_forward parameter must be less than the window parameter."
 
         for file in tqdm(self.files):
@@ -140,6 +140,11 @@ class DataCleaner:
             df['CC'] /= df['CC'].max(); df['CC'] += 1
 
             df_numpy = dc(df).to_numpy()
+
+            if min_max_scale:
+                # Scale the data over columns
+                scaler = MinMaxScaler()
+                df_numpy = scaler.fit_transform(df_numpy)
 
             if log_close:
                 # Transform the closing prices to log prices

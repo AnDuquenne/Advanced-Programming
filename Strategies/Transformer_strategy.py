@@ -73,6 +73,7 @@ DECODER_HORIZON = config['Strategy']['Transformers']['dh_params']['decoder_horiz
 LOG_CLOSE = config['Strategy']['Transformers']['dh_params']['log_close']
 CLOSE_RETURNS = config['Strategy']['Transformers']['dh_params']['close_returns']
 ONLY_CLOSE = config['Strategy']['Transformers']['dh_params']['only_close']
+MIN_MAX_SCALE = config['Strategy']['Transformers']['dh_params']['min_max_scaling']
 
 
 class TimeSeriesDataframe(Dataset):
@@ -313,25 +314,27 @@ if __name__ == '__main__':
     # ------------------------------------------------------------------------ #
     #                              Create the data                             #
     # ------------------------------------------------------------------------ #
-    # cleaner = DataCleaner('BTC', '../io/config.yaml')
-    # cleaner.prepare_dataframe_transformers(
-    #     window=WINDOW,
-    #     look_forward=LOOK_FORWARD,
-    #     decoder_horizon=DECODER_HORIZON,
-    #     log_close=LOG_CLOSE,
-    #     close_returns=CLOSE_RETURNS,
-    #     only_close=ONLY_CLOSE,
-    # )
-    #
-    # cleaner = DataCleaner('ETH', '../io/config.yaml')
-    # cleaner.prepare_dataframe_transformers(
-    #     window=WINDOW,
-    #     look_forward=LOOK_FORWARD,
-    #     decoder_horizon=DECODER_HORIZON,
-    #     log_close=LOG_CLOSE,
-    #     close_returns=CLOSE_RETURNS,
-    #     only_close=ONLY_CLOSE,
-    # )
+    cleaner = DataCleaner('BTC', '../io/config.yaml')
+    cleaner.prepare_dataframe_transformers(
+        window=WINDOW,
+        look_forward=LOOK_FORWARD,
+        decoder_horizon=DECODER_HORIZON,
+        log_close=LOG_CLOSE,
+        close_returns=CLOSE_RETURNS,
+        only_close=ONLY_CLOSE,
+        min_max_scale=MIN_MAX_SCALE
+    )
+
+    cleaner = DataCleaner('ETH', '../io/config.yaml')
+    cleaner.prepare_dataframe_transformers(
+        window=WINDOW,
+        look_forward=LOOK_FORWARD,
+        decoder_horizon=DECODER_HORIZON,
+        log_close=LOG_CLOSE,
+        close_returns=CLOSE_RETURNS,
+        only_close=ONLY_CLOSE,
+        min_max_scale=MIN_MAX_SCALE
+    )
 
     # ------------------------------------------------------------------------ #
     #                               Load the data                              #
@@ -429,7 +432,7 @@ if __name__ == '__main__':
     # Define loss and optimizer
     criterion = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
-    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, 1, gamma=0.995)
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, 1, gamma=0.99)
 
     # ------------------------------------------------------------------------ #
     #                              Train and test                              #

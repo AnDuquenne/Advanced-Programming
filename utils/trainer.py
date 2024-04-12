@@ -106,10 +106,12 @@ class Trainer:
 
                             preds_test = self.model(signal_encoder_test, signal_decoder_test)
 
-                            # if self.debug:
-                            #     print("signal", signal_test[0, :, :].cpu())
-                            #     print("preds", preds_test[0, :, :].cpu())
-                            #     print("targets", target_test[0, :, :].cpu())
+                            if self.debug:
+                                print("Training testing part")
+                                print("signal", signal_encoder_test[0, :, :].cpu())
+                                print("signal_decoder", signal_decoder_test[0, :, :].cpu())
+                                print("preds", preds_test[0, :, :].cpu())
+                                print("targets", target_test[0, :, :].cpu())
 
                             loss_test = self.criterion(preds_test, target_test)
                             tmp_test_loss[idx_test] = np.mean(loss_test.cpu().detach().item())
@@ -154,8 +156,8 @@ class Trainer:
         :return:
         """
 
-        self.model.eval()
-
+        # self.model.eval()
+        #
         with torch.no_grad():
 
             signal_encoder_batch = signal_encoder_batch.float().to(self.device)
@@ -170,8 +172,8 @@ class Trainer:
             targets = signal_decoder_batch[1:, -1, :]
             preds = preds[:-1, -1, :]
 
-        plt.plot(targets.cpu().numpy(), label="targets")
-        plt.plot(preds.cpu().numpy(), label="predictions")
+        plt.plot(targets.cpu().detach().numpy(), label="targets")
+        plt.plot(preds.cpu().detach().numpy(), label="predictions")
         plt.legend()
         plt.show()
 
