@@ -7,6 +7,7 @@ from plotly.subplots import make_subplots
 from tqdm import tqdm
 
 from utils.market import *
+from utils.utils import *
 
 
 class SFStrategy:
@@ -14,15 +15,16 @@ class SFStrategy:
     def __init__(self, data_path=None):
         if data_path is not None:
             self.data_path = data_path
-        self.df = pd.read_csv(data_path)
-        self.positions = []
-        self.orders = []
-        self.opening_time = self.df['date'].values[0]
-        self.opening_price = self.df['close'].values[0]
-        self.closing_time = self.df['date'].values[-1]
-        self.closing_price = self.df['close'].values[-1]
+            self.df = pd.read_csv(data_path)
 
-        self.wallet = 10000
+            self.opening_time = self.df['date'].values[0]
+            self.opening_price = self.df['close'].values[0]
+            self.closing_time = self.df['date'].values[-1]
+            self.closing_price = self.df['close'].values[-1]
+            self.positions = []
+            self.orders = []
+
+            self.wallet = 10000
 
     def analyze_chart(self):
 
@@ -57,19 +59,22 @@ class SFStrategy:
         order_list = orders
         position_list = positions
         wallet = wallet
-        buy_percentage = 0.01
-        profits = 0
+        buy_percentage = 0.00025
+        dollars_value = 0
         exposure = 0.5  # 50% of the wallet is open to create orders
 
         # Amount of index to buy per order
         am_ = wallet * exposure / 100 / data
 
         # If the order list and the position list are empty, create the orders
+        # Create 100 orders
         if len(order_list) == 0 and len(position_list) == 0:
-            for value in np.linspace(data, 0, 101)[1:]:
+            for value in [data * (1-(i*buy_percentage)) for i in range(1, 100)]:
+
+                print(f"Creating order at {value}")
 
                 order_list.append(Order(
-                    time=data[0],
+                    time=time,
                     price=value,
                     amount=am_,
                     direction='long'))
@@ -80,21 +85,22 @@ class SFStrategy:
             if order.direction == 'long' and data <= order.price:
                 if wallet >= order.amount:
 
-                    print(f"Order condition met at {data}, {time}")
-                    print(f'Wallet: {wallet}')
+                    print_green(f"Order condition met at {data}, {time}")
 
                     # Create a new position
-                    position_list.append(
-                        Position(
+                    p = Position(
                             opening_price=data,
                             opening_time=time,
                             amount=am_,
                             direction="long",
-                            closing_price=data * (1 + buy_percentage))
+                            closing_price=data * (1 + buy_percentage)
                     )
 
+                    # Add the position to the position list
+                    position_list.append(p)
+
                     # Update the wallet value
-                    wallet -= order.amount
+                    wallet -= order.amount * data
 
                     # Remove the order from the order list
                     del order_list[0]
@@ -106,23 +112,22 @@ class SFStrategy:
             # Case 1: The position is a long position and the index price is above the closing price -> close the pos
             if position.direction == 'long' and data >= position.closing_price and position.status == 'open':
 
-                print(f"Position closing condition met at {data}, {time}")
-                print(f'Wallet: {self.wallet}')
+                print_red(f"Position closing condition met at {data}, {time}")
 
                 position.close(data, time)
-                profits += position.profit
+                dollars_value += position.dollars_value(data)
 
                 # Reset the order book
                 order_list = []
-                for value in np.linspace(data, 0, 101)[1:]:
-                    self.orders.append(Order(
+                for value in [data * (1-(i*buy_percentage)) for i in range(1, 100)]:
+                    order_list.append(Order(
                         time=time,
                         price=value,
                         amount=am_,
                         direction='long'))
 
         # Update the wallet by adding profits made by closing positions
-        wallet += profits
+        wallet += dollars_value
 
         return order_list, position_list, wallet
 
