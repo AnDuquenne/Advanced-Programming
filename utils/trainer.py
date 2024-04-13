@@ -143,7 +143,7 @@ class Trainer:
         if self.wandb_:
             wandb.finish()
 
-    def evaluate(self, signal_encoder_batch, signal_decoder_batch):
+    def evaluate(self, signal_encoder_batch, signal_decoder_batch, signal_target_batch):
         """
         The function will take a batch of size n, of n sequences in temporal order, and will return the predictions of
         the n-1 next periods.
@@ -162,6 +162,7 @@ class Trainer:
 
             signal_encoder_batch = signal_encoder_batch.float().to(self.device)
             signal_decoder_batch = signal_decoder_batch.float().to(self.device)
+            signal_target_batch = signal_target_batch.float().to(self.device)
 
             preds = self.model(signal_encoder_batch, signal_decoder_batch)
 
@@ -169,7 +170,7 @@ class Trainer:
             print("signal_encoder", signal_encoder_batch.size())
             print("signal_decoder", signal_decoder_batch.size())
 
-            targets = signal_decoder_batch[1:, -1, :]
+            targets = signal_target_batch[1:, -1, :]
             preds = preds[:-1, -1, :]
 
         plt.plot(targets.cpu().detach().numpy(), label="targets")

@@ -1,3 +1,10 @@
+"""
+This script is used to create a transformer model for time series forecasting.
+Based on : Deep Transformer Models for Time Series Forecasting: The Influenza Prevalence Case
+https://arxiv.org/abs/2001.08317
+Neo Wu, Bradley Green, Xue Ben, Shawn O'Banion
+"""
+
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -168,6 +175,12 @@ class TimeSeriesTransformerForecaster(nn.Module):
             num_layers=self.NUM_LAYERS
         )
 
+        self.fc_decoder_1 = nn.Linear(self.EMBEDDING_SIZE, self.EMBEDDING_SIZE * self.EXPANSION)
+        self.fc_decoder_2 = nn.Linear(self.EMBEDDING_SIZE * self.EXPANSION, self.EMBEDDING_SIZE)
+
+        self.relu_1 = nn.ReLU()
+        self.relu_2 = nn.ReLU()
+
         self.fc_decoder = nn.Linear(self.EMBEDDING_SIZE, 1)
 
         self.init_weights()
@@ -210,6 +223,12 @@ class TimeSeriesTransformerForecaster(nn.Module):
 
         x_decoder = self.transformer_decoder(x_decoder, x_encoder,
                                              tgt_mask=self.target_mask, memory_mask=self.encoder_mask)
+
+        x_decoder = self.fc_decoder_1(x_decoder)
+        x_decoder = self.relu_1(x_decoder)
+
+        x_decoder = self.fc_decoder_2(x_decoder)
+        x_decoder = self.relu_2(x_decoder)
 
         x_decoder = self.fc_decoder(x_decoder)
 
@@ -306,7 +325,6 @@ class EmbeddingLayer(nn.Module):
         init_range = 0.1
         self.encoder_fc.bias.data.zero_()
         self.encoder_fc.weight.data.uniform_(-init_range, init_range)
-
 
 
 if __name__ == '__main__':
@@ -432,7 +450,7 @@ if __name__ == '__main__':
     # Define loss and optimizer
     criterion = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
-    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, 1, gamma=0.99)
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, 1, gamma=1)
 
     # ------------------------------------------------------------------------ #
     #                              Train and test                              #
@@ -441,6 +459,6 @@ if __name__ == '__main__':
     trainer = Trainer(train_loader, test_loader, model, optimizer, criterion, scheduler, DEVICE, NB_EPOCHS,
                       SAVE_PATH_LOSS, SAVE_PATH_WEIGHTS, MODEL_NAME, DEBUG, SAVE_PATH, WANDB)
 
-    trainer.train()
-    # trainer.evaluate(X_encoder_test[:300, :, :], X_decoder_test[:300, :, :])
+    # trainer.train()
+    trainer.evaluate(X_encoder_test[6000:7000, :, :], X_decoder_test[6000:7000, :, :], y_test[6000:7000, :, :])
 

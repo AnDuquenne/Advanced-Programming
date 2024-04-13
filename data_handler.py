@@ -90,8 +90,7 @@ class DataCleaner:
                 for j in range(window):
                     X_torch[:, (i * window) + j] = torch.tensor(df_numpy[j: -window + j, i])
 
-            y_torch = dc(X_torch[:, window-look_forward:window])
-
+            y_torch = dc(X_torch[:, window - look_forward:window])
 
             # Remove the last look_forward columns for the X_torch and the technical indicators
             df_X = pd.DataFrame(X_torch.numpy())
@@ -112,7 +111,6 @@ class DataCleaner:
             # Use the mask to select columns
             X_torch = X_torch[:, mask]
 
-
             # Remove the last "look_forward" rows for the x_torch and y_torch
             # (due to shift in dataset creation, the last "look_forward" rows are not valid)
             X_torch = X_torch[:-look_forward]
@@ -131,13 +129,20 @@ class DataCleaner:
             df = df[['date', 'close', 'MACD', 'Signal Line', 'Histogram', 'RSI', 'Stochastic RSI', 'DPO', 'CC']]
             df.set_index('date', inplace=True)
 
-            df['MACD'] /= df['MACD'].max(); df['MACD'] += 1
-            df['Signal Line'] /= df['Signal Line'].max(); df['Signal Line'] += 1
-            df['Histogram'] /= df['Histogram'].max(); df['Histogram'] += 1
-            df['RSI'] /= df['RSI'].max(); df['RSI'] += 1
-            df['Stochastic RSI'] /= df['Stochastic RSI'].max(); df['Stochastic RSI'] += 1
-            df['DPO'] /= df['DPO'].max(); df['DPO'] += 1
-            df['CC'] /= df['CC'].max(); df['CC'] += 1
+            df['MACD'] /= df['MACD'].max();
+            df['MACD'] += 1
+            df['Signal Line'] /= df['Signal Line'].max();
+            df['Signal Line'] += 1
+            df['Histogram'] /= df['Histogram'].max();
+            df['Histogram'] += 1
+            df['RSI'] /= df['RSI'].max();
+            df['RSI'] += 1
+            df['Stochastic RSI'] /= df['Stochastic RSI'].max();
+            df['Stochastic RSI'] += 1
+            df['DPO'] /= df['DPO'].max();
+            df['DPO'] += 1
+            df['CC'] /= df['CC'].max();
+            df['CC'] += 1
 
             df_numpy = dc(df).to_numpy()
 
@@ -150,11 +155,14 @@ class DataCleaner:
                 # Transform the closing prices to log prices
                 df_numpy[:, 0] = np.log(df_numpy[:, 0])
 
-                if close_returns:
-                    # Calculate the returns
-                    df_numpy[:, 0] = np.diff(df_numpy[:, 0], prepend=0)
-                    # Remove the first row
-                    df_numpy = df_numpy[1:, :]
+            if close_returns:
+                # Calculate the returns as being the ratio between the log prices
+                df_numpy[1:, 0] = df_numpy[1:, 0] / df_numpy[:-1, 0]
+                # Remove the first row
+                df_numpy = df_numpy[1:, :]
+                # Remove 1, to have a percentage change
+                df_numpy[:, 0] -= 1
+                df_numpy[:, 0] *= 100
 
             if only_close:
                 df_numpy = df_numpy[:, 0].reshape(-1, 1)
@@ -169,16 +177,16 @@ class DataCleaner:
                                             window + look_forward))
 
             for i in range(df_numpy.shape[1] - (window + look_forward)):
-                numpy_windowed_data[i, :, :] = df_numpy[:, i:i+window+look_forward]
+                numpy_windowed_data[i, :, :] = df_numpy[:, i:i + window + look_forward]
 
             # Numpy windowed data is [nb of possible windows, nb of features, window size]
 
             # Create the torch tensors, for y we keep only the feature "Close"
             # For the transformer layers we need (S, N, E)
             # S: sequence length, N: batch size, E: number of features (or embedding size)
-            X_torch_encoder = torch.tensor(numpy_windowed_data[:, :, :(window-1)])
-            X_torch_decoder = torch.tensor(numpy_windowed_data[:, 0, (window-2):-look_forward]).unsqueeze(1)
-            y_torch = torch.tensor(numpy_windowed_data[:, 0, (window-1):]).unsqueeze(1)
+            X_torch_encoder = torch.tensor(numpy_windowed_data[:, :, :(window - 1)])
+            X_torch_decoder = torch.tensor(numpy_windowed_data[:, 0, (window - 2):-look_forward]).unsqueeze(1)
+            y_torch = torch.tensor(numpy_windowed_data[:, 0, (window - 1):]).unsqueeze(1)
 
             # Get [N_windows, seq_len, n_features]
             X_torch_encoder = X_torch_encoder.transpose(1, 2)

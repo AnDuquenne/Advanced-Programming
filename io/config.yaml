@@ -48,7 +48,7 @@ Strategy:
     normalize: False
     debug: False
     debug_name: False
-    wandb: True
+    wandb: False
     dh_params:
       window: 10
       look_forward: 1
@@ -56,4 +56,4 @@ Strategy:
       log_close: False
       close_returns: False
       only_close: True
-      min_max_scaling: True
+      min_max_scaling: False

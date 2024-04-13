@@ -11,8 +11,9 @@ from utils.market import *
 
 class SFStrategy:
 
-    def __init__(self, data_path):
-        self.data_path = data_path
+    def __init__(self, data_path=None):
+        if data_path is not None:
+            self.data_path = data_path
         self.df = pd.read_csv(data_path)
         self.positions = []
         self.orders = []
@@ -40,6 +41,90 @@ class SFStrategy:
                            mode='lines', name='Opening price'), row=1, col=1)
 
         fig.show()
+
+    def check_conditions(self, orders, positions, data, time, wallet):
+        """
+        Central part of the strategy class. It takes as input the list of positions and orders and the data.
+        The data is composed of the prices of the index as well as what the strategy needs to make a decision.
+        In this case, the strategy is very simple and only needs the closing prices.
+        :param orders: A list of the orders
+        :param positions: A list of the positions
+        :param data: The index price
+        :param time: The time of the index price
+        :param wallet: The amount disposable to trade
+        :return: The update lists of orders and positions
+        """
+        order_list = orders
+        position_list = positions
+        wallet = wallet
+        buy_percentage = 0.01
+        profits = 0
+        exposure = 0.5  # 50% of the wallet is open to create orders
+
+        # Amount of index to buy per order
+        am_ = wallet * exposure / 100 / data
+
+        # If the order list and the position list are empty, create the orders
+        if len(order_list) == 0 and len(position_list) == 0:
+            for value in np.linspace(data, 0, 101)[1:]:
+
+                order_list.append(Order(
+                    time=data[0],
+                    price=value,
+                    amount=am_,
+                    direction='long'))
+
+        # Check orders
+        for order in order_list:
+            # Case 1: The order is a long order and the index price is below the order price -> execute the order
+            if order.direction == 'long' and data <= order.price:
+                if wallet >= order.amount:
+
+                    print(f"Order condition met at {data}, {time}")
+                    print(f'Wallet: {wallet}')
+
+                    # Create a new position
+                    position_list.append(
+                        Position(
+                            opening_price=data,
+                            opening_time=time,
+                            amount=am_,
+                            direction="long",
+                            closing_price=data * (1 + buy_percentage))
+                    )
+
+                    # Update the wallet value
+                    wallet -= order.amount
+
+                    # Remove the order from the order list
+                    del order_list[0]
+                else:
+                    print(f'Not enough money to buy {order.amount} at {data}')
+
+        # Check positions
+        for position in position_list:
+            # Case 1: The position is a long position and the index price is above the closing price -> close the pos
+            if position.direction == 'long' and data >= position.closing_price and position.status == 'open':
+
+                print(f"Position closing condition met at {data}, {time}")
+                print(f'Wallet: {self.wallet}')
+
+                position.close(data, time)
+                profits += position.profit
+
+                # Reset the order book
+                order_list = []
+                for value in np.linspace(data, 0, 101)[1:]:
+                    self.orders.append(Order(
+                        time=time,
+                        price=value,
+                        amount=am_,
+                        direction='long'))
+
+        # Update the wallet by adding profits made by closing positions
+        wallet += profits
+
+        return order_list, position_list, wallet
 
     def run(self):
 
