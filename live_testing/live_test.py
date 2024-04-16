@@ -119,4 +119,4 @@ class LiveTest():
                 msg += f"Total value of the wallet (pos+wallet): {tot_ + self.wallet}\n"
                 send_message(title, msg)
 
-            time.sleep(5)
+            time.sleep(1)
