@@ -16,6 +16,7 @@ parent_dir = os.path.dirname(current_dir)
 sys.path.append(parent_dir)
 
 from utils.utils import *
+from utils.notifications import send_message
 
 class LiveTest():
     def __init__(self, index, strategy, wallet):
@@ -102,5 +103,20 @@ class LiveTest():
 
             print(f"Total value of positions: {tot_}")
             print(f"Total value of the wallet (pos+wallet): {tot_ + self.wallet}")
+
+            if t.second == 30:
+                title = "Recurrent update\n\n"
+                msg = ""
+                msg += f"Positions:\n"
+                msg += f"\t\t open: {open_pos_}\n"
+                msg += f"\t\t closed: {len(self.positions) - open_pos_}\n"
+                msg += f"\t\t total: {len(self.positions)}\n"
+                msg += f"PNL of positions\n"
+                msg += f"\t\t Closed: {pnl_closed}\n"
+                msg += f"\t\t Open: {pnl_open}\n"
+                msg += f"\t\t Total: {pnl_closed + pnl_open}\n"
+                msg += f"Total value of positions: {tot_}\n"
+                msg += f"Total value of the wallet (pos+wallet): {tot_ + self.wallet}\n"
+                send_message(title, msg)
 
             time.sleep(5)

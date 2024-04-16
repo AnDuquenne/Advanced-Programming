@@ -93,9 +93,9 @@ class SFStrategy:
                     print_green(f"\t Position size: {order.amount} at {data}")
                     print_green(f"\t Position value: {order.amount * data}")
                     send_message(
-                        f"Order condition met at {round(data, 3)}",
-                        f"Position size: {round(order.amount, 3)} at {round(data, 3)}"
-                        f"Position value: {round(order.amount * data, 3)}"
+                        f"Order condition met at {round(data, 3)}\n",
+                        f"Position size: {round(order.amount, 3)} at {round(data, 3)}\n"
+                        f"Position value: {round(order.amount * data, 3)}\n"
                         f"Wallet: {round(wallet, 5)}",
                     )
 
@@ -128,9 +128,9 @@ class SFStrategy:
                 print_red(f"\t Position size: {position.amount} at {data}")
                 print_red(f"\t Position value: {position.amount * data}")
                 send_message(
-                    f"Position closing condition met at {round(data, 3)}",
-                    f"Position size: {round(position.amount, 3)} at {round(data, 3)}"
-                    f"Position value: {round(position.amount * data, 3)}"
+                    f"Position closing condition met at {round(data, 3)}\n",
+                    f"Position size: {round(position.amount, 3)} at {round(data, 3)}\n"
+                    f"Position value: {round(position.amount * data, 3)}\n"
                     f"Wallet: {round(wallet, 5)}",
                 )
 
