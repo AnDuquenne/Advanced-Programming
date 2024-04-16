@@ -25,10 +25,10 @@ class SFStrategy:
             self.positions = []
             self.orders = []
 
-            self.buy_percentage = buy_percentage
-            self.exposure = exposure  # x % of the wallet is open to create orders
-
             self.wallet = 10000  # For backtest only
+
+        self.buy_percentage = buy_percentage
+        self.exposure = exposure  # x % of the wallet is open to create orders
 
     def analyze_chart(self):
 
