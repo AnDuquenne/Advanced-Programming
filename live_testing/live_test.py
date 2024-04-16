@@ -2,6 +2,7 @@ import asyncio
 import websockets
 import requests
 import time
+import datetime
 import json
 
 from utils.utils import *
@@ -34,15 +35,16 @@ class LiveTest():
                  "index_name": self.index}
              }
         price = asyncio.get_event_loop().run_until_complete(self.call_api(json.dumps(msg)))
-        return price, time.time()
+        return price, datetime.datetime.now()
 
     def run(self):
         # Every 5 seconds get the index price
         while True:
 
             price, t = self.get_price()
+            t_string = f"{t.day}/{t.month}/{t.year}-{t.hour}:{t.minute}:{t.second}"
 
-            print_yellow(f"------- Update at {t} -------")
+            print_yellow(f"------- Update at " + t_string + " -------")
 
             self.orders, self.positions, self.wallet = self.strategy.check_conditions(
                 orders=self.orders,

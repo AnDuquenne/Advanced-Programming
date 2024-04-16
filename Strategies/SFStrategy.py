@@ -9,10 +9,11 @@ from tqdm import tqdm
 from utils.market import *
 from utils.utils import *
 
+from utils.notifications import send_message
 
 class SFStrategy:
 
-    def __init__(self, data_path=None):
+    def __init__(self, data_path=None, buy_percentage=0.001, exposure=2):
         if data_path is not None:
             self.data_path = data_path
             self.df = pd.read_csv(data_path)
@@ -24,7 +25,10 @@ class SFStrategy:
             self.positions = []
             self.orders = []
 
-            self.wallet = 10000
+            self.buy_percentage = buy_percentage
+            self.exposure = exposure  # x % of the wallet is open to create orders
+
+            self.wallet = 10000  # For backtest only
 
     def analyze_chart(self):
 
@@ -59,17 +63,17 @@ class SFStrategy:
         order_list = orders
         position_list = positions
         wallet = wallet
-        buy_percentage = 0.00025
         dollars_value = 0
-        exposure = 0.5  # 50% of the wallet is open to create orders
+
+        t_string = f"{time.day}/{time.month}/{time.year}-{time.hour}:{time.minute}:{time.second}"
 
         # Amount of index to buy per order
-        am_ = wallet * exposure / 100 / data
+        am_ = wallet * self.exposure / 100 / data
 
         # If the order list and the position list are empty, create the orders
         # Create 100 orders
         if len(order_list) == 0 and len(position_list) == 0:
-            for value in [data * (1-(i*buy_percentage)) for i in range(1, 100)]:
+            for value in [data * (1-(i*self.buy_percentage)) for i in range(1, 100)]:
 
                 print(f"Creating order at {value}")
 
@@ -85,15 +89,23 @@ class SFStrategy:
             if order.direction == 'long' and data <= order.price:
                 if wallet >= order.amount:
 
-                    print_green(f"Order condition met at {data}, {time}")
+                    print_green(t_string + f"Order condition met at {data}")
+                    print_green(f"\t Position size: {order.amount} at {data}")
+                    print_green(f"\t Position value: {order.amount * data}")
+                    send_message(
+                        f"Order condition met at {round(data, 3)}",
+                        f"Position size: {round(order.amount, 3)} at {round(data, 3)}"
+                        f"Position value: {round(order.amount * data, 3)}"
+                        f"Wallet: {round(wallet, 5)}",
+                    )
 
                     # Create a new position
                     p = Position(
                             opening_price=data,
                             opening_time=time,
-                            amount=am_,
+                            amount=order.amount,
                             direction="long",
-                            closing_price=data * (1 + buy_percentage)
+                            closing_price=data * (1 + self.buy_percentage)
                     )
 
                     # Add the position to the position list
@@ -112,18 +124,26 @@ class SFStrategy:
             # Case 1: The position is a long position and the index price is above the closing price -> close the pos
             if position.direction == 'long' and data >= position.closing_price and position.status == 'open':
 
-                print_red(f"Position closing condition met at {data}, {time}")
+                print_red(t_string + f"Position closing condition met at {data}")
+                print_red(f"\t Position size: {position.amount} at {data}")
+                print_red(f"\t Position value: {position.amount * data}")
+                send_message(
+                    f"Position closing condition met at {round(data, 3)}",
+                    f"Position size: {round(position.amount, 3)} at {round(data, 3)}"
+                    f"Position value: {round(position.amount * data, 3)}"
+                    f"Wallet: {round(wallet, 5)}",
+                )
 
                 position.close(data, time)
                 dollars_value += position.dollars_value(data)
 
                 # Reset the order book
                 order_list = []
-                for value in [data * (1-(i*buy_percentage)) for i in range(1, 100)]:
+                for value in [data * (1-(i*self.buy_percentage)) for i in range(1, 100)]:
                     order_list.append(Order(
                         time=time,
                         price=value,
-                        amount=am_,
+                        amount=position.amount,
                         direction='long'))
 
         # Update the wallet by adding profits made by closing positions
