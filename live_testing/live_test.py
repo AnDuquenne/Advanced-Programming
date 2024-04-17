@@ -118,7 +118,7 @@ class LiveTest():
                 print(f"Total value of positions: {tot_}")
                 print(f"Total value of the wallet (pos+wallet): {tot_ + self.wallet}")
 
-            if t.second == 30:
+            if t.second == 30 and t.minute % 15 == 0:
                 title = "Recurrent update\n\n"
                 msg = ""
                 msg += f"Positions:\n"
