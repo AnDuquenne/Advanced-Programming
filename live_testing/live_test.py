@@ -128,7 +128,7 @@ class LiveTest():
                 notif_sent = False
 
             iter_log = 0
-            if t.second == 30 and t.minute % 10 == 0 and not notif_sent:
+            if t.second == 30 and t.minute % 2 == 0 and not notif_sent:
                 title = emoji.emojize(":clock1:") + " Recurrent update " + emoji.emojize(":clock1:") + "\n\n"
                 msg = ""
                 msg += f"Positions:\n"
