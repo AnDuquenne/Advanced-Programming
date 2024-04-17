@@ -13,7 +13,7 @@ from utils.notifications import send_message
 
 class SFStrategy:
 
-    def __init__(self, data_path=None, buy_percentage=0.001, exposure=2):
+    def __init__(self, data_path=None, buy_percentage=0.01, exposure=2):
         if data_path is not None:
             self.data_path = data_path
             self.df = pd.read_csv(data_path)
