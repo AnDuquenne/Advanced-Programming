@@ -1,7 +1,8 @@
 from live_test import LiveTest
 from Strategies.SFStrategy import SFStrategy
+from Strategies.SFStrategy_I import SFStrategyI
 
-strategy = SFStrategy(buy_percentage=0.001)
+strategy = SFStrategyI(buy_percentage=0.00025)
 wallet = 1000
 
 if __name__ == "__main__":

@@ -36,7 +36,7 @@ class Position:
         if self._direction == 'long':
             return self._amount * current_price
         else:
-            return self._amount * (self.opening_price - (current_price - self.opening_price))
+            return - self._amount * current_price
 
     def pnl(self, current_price):
         """
