@@ -13,6 +13,14 @@ from utils.notifications import send_message
 
 import emoji
 
+# laod env variables
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+env = os.getenv("environment")
+
 class SFStrategy:
 
     def __init__(self, data_path=None, buy_percentage=0.01, exposure=2):
@@ -91,6 +99,7 @@ class SFStrategy:
             if order.direction == 'long' and data <= order.price:
                 if wallet >= order.amount:
 
+                    # Print, notification and log the order
                     print_green(emoji.emojize(":green_circle:") + t_string + f"Order condition met at {data}")
                     print_green(f"\t Position size: {order.amount} at {data}")
                     print_green(f"\t Position value: {order.amount * data}")
@@ -101,6 +110,14 @@ class SFStrategy:
                         f"Position value: {round(order.amount * data, 3)}\n"
                         f"Wallet: {round(wallet, 5)}",
                     )
+                    if env == "server":
+                        # Log the order
+                        with open('io/live_test/live_test_log_SFStrategy.txt', 'a') as file:
+                            file.write(t_string + "\n")
+                            file.write(f"Order condition met at {round(data, 3)}\n")
+                            file.write(f"Position size: {round(order.amount, 3)} at {round(data, 3)}\n")
+                            file.write(f"Position value: {round(order.amount * data, 3)}\n")
+                            file.write(f"Wallet: {round(wallet, 5)}\n\n\n")
 
                     # Create a new position
                     p = Position(
@@ -137,6 +154,14 @@ class SFStrategy:
                     f"Position value: {round(position.amount * data, 3)}\n"
                     f"Wallet: {round(wallet, 5)}",
                 )
+                if env == "server":
+                    # Log the order
+                    with open('io/live_test/live_test_log_SFStrategy.txt', 'a') as file:
+                        file.write(t_string + "\n")
+                        file.write(f"Position closing condition met at {round(data, 3)}\n")
+                        file.write(f"Position size: {round(position.amount, 3)} at {round(data, 3)}\n")
+                        file.write(f"Position value: {round(position.amount * data, 3)}\n")
+                        file.write(f"Wallet: {round(wallet, 5)}\n\n\n")
 
                 position.close(data, time)
                 dollars_value += position.dollars_value(data)
