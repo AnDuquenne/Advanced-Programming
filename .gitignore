@@ -4,3 +4,6 @@ Strategies/wandb/*
 
 # Ignore .env file containing credentials
 .env
+
+# Ignore the txt file in the io directory
+io/*.txt
