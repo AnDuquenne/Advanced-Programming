@@ -11,6 +11,8 @@ from utils.utils import *
 
 from utils.notifications import send_message
 
+import emoji
+
 class SFStrategy:
 
     def __init__(self, data_path=None, buy_percentage=0.01, exposure=2):
@@ -89,10 +91,11 @@ class SFStrategy:
             if order.direction == 'long' and data <= order.price:
                 if wallet >= order.amount:
 
-                    print_green(t_string + f"Order condition met at {data}")
+                    print_green(emoji.emojize(":green_circle:") + t_string + f"Order condition met at {data}")
                     print_green(f"\t Position size: {order.amount} at {data}")
                     print_green(f"\t Position value: {order.amount * data}")
                     send_message(
+                        emoji.emojize(":green_circle:") +
                         f"Order condition met at {round(data, 3)}\n",
                         f"Position size: {round(order.amount, 3)} at {round(data, 3)}\n"
                         f"Position value: {round(order.amount * data, 3)}\n"
@@ -124,10 +127,11 @@ class SFStrategy:
             # Case 1: The position is a long position and the index price is above the closing price -> close the pos
             if position.direction == 'long' and data >= position.closing_price and position.status == 'open':
 
-                print_red(t_string + f"Position closing condition met at {data}")
+                print_red(emoji.emojize(":red_circle:") + t_string + f"Position closing condition met at {data}")
                 print_red(f"\t Position size: {position.amount} at {data}")
                 print_red(f"\t Position value: {position.amount * data}")
                 send_message(
+                    emoji.emojize(":red_circle:") +
                     f"Position closing condition met at {round(data, 3)}\n",
                     f"Position size: {round(position.amount, 3)} at {round(data, 3)}\n"
                     f"Position value: {round(position.amount * data, 3)}\n"

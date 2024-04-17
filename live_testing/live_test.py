@@ -5,6 +5,8 @@ import time
 import datetime
 import json
 
+import emoji
+
 import sys
 import os
 
@@ -119,7 +121,7 @@ class LiveTest():
                 print(f"Total value of the wallet (pos+wallet): {tot_ + self.wallet}")
 
             if t.second == 30 and t.minute % 10 == 0:
-                title = "Recurrent update\n\n"
+                title = emoji.emojize(":clock1:") + " Recurrent update " + emoji.emojize(":clock1:") + "\n\n"
                 msg = ""
                 msg += f"Positions:\n"
                 msg += f"\t\t open: {open_pos_}\n"
