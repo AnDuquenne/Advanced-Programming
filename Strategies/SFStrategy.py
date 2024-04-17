@@ -1,3 +1,11 @@
+"""
+This file contains the SFStrategy class. This class is a simple straightforward strategy.
+It creates 100 orders at the opening price of the index. Each order is x% below the previous one.
+When the index price reaches an order price, the order is executed and a position is created.
+The position is closed when the index price reaches the closing price of the position.
+When a position is closed, the order book is replaced using the last price of the closing position as reference.
+"""
+
 import numpy as np
 import pandas as pd
 
@@ -21,9 +29,19 @@ load_dotenv()
 
 env = os.getenv("environment")
 
+
 class SFStrategy:
 
     def __init__(self, data_path=None, buy_percentage=0.01, exposure=2):
+        """
+        Initialize the strategy
+
+        :param data_path: Path to the data for the backtest
+        :param buy_percentage: The percentage range to create the orders
+        ex. if buy_percentage = 0.01, the orders will be created at 1% intervals (200, 198, ...)
+        :param exposure: Wallet exposure to the orders
+        ex. if exposure = 0.5, 50% of the wallet is open to create the order book
+        """
         if data_path is not None:
             self.data_path = data_path
             self.df = pd.read_csv(data_path)
@@ -41,6 +59,10 @@ class SFStrategy:
         self.exposure = exposure  # x % of the wallet is open to create orders
 
     def analyze_chart(self):
+        """
+        EDA of the data
+        :return:
+        """
 
         # make a plotly chart of the data with a small horizontal line for each 1% away from the opening price
         fig = make_subplots(rows=1, cols=1)
@@ -83,8 +105,7 @@ class SFStrategy:
         # If the order list and the position list are empty, create the orders
         # Create 100 orders
         if len(order_list) == 0 and len(position_list) == 0:
-            for value in [data * (1-(i*self.buy_percentage)) for i in range(1, 100)]:
-
+            for value in [data * (1 - (i * self.buy_percentage)) for i in range(1, 100)]:
                 print(f"Creating order at {value}")
 
                 order_list.append(Order(
@@ -121,11 +142,11 @@ class SFStrategy:
 
                     # Create a new position
                     p = Position(
-                            opening_price=data,
-                            opening_time=time,
-                            amount=order.amount,
-                            direction="long",
-                            closing_price=data * (1 + self.buy_percentage)
+                        opening_price=data,
+                        opening_time=time,
+                        amount=order.amount,
+                        direction="long",
+                        closing_price=data * (1 + self.buy_percentage)
                     )
 
                     # Add the position to the position list
@@ -168,7 +189,7 @@ class SFStrategy:
 
                 # Reset the order book
                 order_list = []
-                for value in [data * (1-(i*self.buy_percentage)) for i in range(1, 100)]:
+                for value in [data * (1 - (i * self.buy_percentage)) for i in range(1, 100)]:
                     order_list.append(Order(
                         time=time,
                         price=value,
@@ -181,6 +202,10 @@ class SFStrategy:
         return order_list, position_list, wallet
 
     def run(self):
+        """
+        Used to perform backtest on the data recovered from the cedif and kaggle.
+        :return:
+        """
 
         ts = self.df['close']
         initial_value = ts[0]
@@ -265,6 +290,10 @@ class SFStrategy:
         return profits
 
     def show_simulation(self):
+        """
+        Plot the simulation for the backtesting of the strategy
+        :return:
+        """
         fig = go.Figure()
 
         fig.add_trace(go.Scatter(x=self.df['date'], y=self.df['close'], mode='lines', name='Close price'))

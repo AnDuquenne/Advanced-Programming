@@ -1,5 +1,8 @@
 class Position:
-    def __init__(self, opening_price, opening_time, amount, direction, closing_price):
+    def __init__(self, opening_price: float, opening_time, amount: float, direction: str, closing_price: float):
+
+        assert direction in ['long', 'short'], "Direction must be either long or short"
+
         self._status = 'open'
         self._opening_price = opening_price
         self._opening_time = opening_time
@@ -10,16 +13,41 @@ class Position:
         self._profit = 0
 
     def close(self, closing_price, closing_time):
+        """
+        Close the position
+        :param closing_price: the closing price
+        :param closing_time: the closing time
+        :return:
+        """
         self._status = 'closed'
         self._closing_price = closing_price
         self._closing_time = closing_time
-        self._profit = self._amount * (self._closing_price - self._opening_price)
+        if self._direction == 'long':
+            self._profit = self._amount * (self._closing_price - self._opening_price)
+        else:
+            self._profit = - (self._amount * (self._closing_price - self._opening_price))
 
     def dollars_value(self, current_price):
-        return self._amount * current_price
+        """
+        Calculate the value of the position in dollars
+        :param current_price: The actual price of the asset
+        :return:
+        """
+        if self._direction == 'long':
+            return self._amount * current_price
+        else:
+            return self._amount * (self.opening_price - (current_price - self.opening_price))
 
     def pnl(self, current_price):
-        return self._amount * (current_price - self._opening_price)
+        """
+        Calculate the profit and loss of the position (to be used when the position is still open)
+        :param current_price: The actual price of the asset
+        :return:
+        """
+        if self._direction == 'long':
+            return self._amount * (current_price - self._opening_price)
+        else:
+            return - self._amount * (current_price - self._opening_price)
 
     @property
     def opening_price(self):
