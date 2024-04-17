@@ -59,7 +59,10 @@ class LiveTest():
         return price, datetime.datetime.now()
 
     def run(self):
-        # Every 5 seconds get the index price
+
+        notif_sent = False
+
+        # Every x seconds get the index price
         while True:
 
             price, t = self.get_price()
@@ -120,7 +123,12 @@ class LiveTest():
                 print(f"Total value of positions: {tot_}")
                 print(f"Total value of the wallet (pos+wallet): {tot_ + self.wallet}")
 
-            if t.second == 30 and t.minute % 10 == 0:
+            # To avoid sending multiple notifications inside the same second
+            if t.second == 0:
+                notif_sent = False
+
+            iter_log = 0
+            if t.second == 30 and t.minute % 10 == 0 and not notif_sent:
                 title = emoji.emojize(":clock1:") + " Recurrent update " + emoji.emojize(":clock1:") + "\n\n"
                 msg = ""
                 msg += f"Positions:\n"
@@ -134,6 +142,27 @@ class LiveTest():
                 msg += f"Total value of positions: {tot_}\n"
                 msg += f"Total value of the wallet (pos+wallet): {tot_ + self.wallet}\n"
                 send_message(title, msg)
+                notif_sent = True
+                iter_log += 1
+
+                if env == "server":
+                    # Record pnl and wallet each 10 minutes
+                    # Check if file exists
+                    if not os.path.exists("io/live_testing/perf/" + self.strategy.__str__ + ".csv"):
+                        with open("io/live_testing/perf/" + self.strategy.__str__ + ".csv", "w") as f:
+                            f.write("iter,time,open_pos,closed_pos,tot_pos,"
+                                    "pnl_pos_closed,pnl_pos_open,pnl_pos_tot,wallet_tot\n")
+
+                    # Write the data
+                    with open("io/live_testing/perf/" + self.strategy.__str__ + ".csv", "a") as f:
+                        f.write(f"{iter_log},"
+                                f"{t},"
+                                f"{open_pos_},"
+                                f"{len(self.positions) - open_pos_},"
+                                f"{len(self.positions)},"
+                                f"{pnl_closed},"
+                                f"{pnl_open},"
+                                f"{tot_ + self.wallet}\n")
 
             if env == "local":
                 time.sleep(5)

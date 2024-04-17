@@ -30,7 +30,7 @@ env = os.getenv("environment")
 
 class SFStrategyI:
 
-    def __init__(self, data_path=None, buy_percentage=0.01, exposure=2):
+    def __init__(self, run_name, data_path=None, buy_percentage=0.01, exposure=2):
         """
         Initialize the strategy
 
@@ -55,6 +55,7 @@ class SFStrategyI:
 
             self.wallet = 10000  # For backtest only
 
+        self.run_name = run_name
         self.buy_percentage = buy_percentage
         self.exposure = exposure  # x % of the wallet is open to create orders
 
@@ -158,8 +159,12 @@ class SFStrategyI:
                         f"Wallet: {round(wallet, 5)}",
                     )
                     if env == "server":
+                        # Check if file exists
+                        if not os.path.exists('io/live_test/log/live_test_log_SFStrategyI' + self.run_name + '.txt'):
+                            with open('io/live_test/log/live_test_log_SFStrategyI' + self.run_name + '.txt', 'w') as file:
+                                file.write("Log file for the live test of the SFStrategyI\n\n\n")
                         # Log the order
-                        with open('io/live_test/live_test_log_SFStrategy.txt', 'a') as file:
+                        with open('io/live_test/log/live_test_log_SFStrategyI' + self.run_name + '.txt', 'a') as file:
                             file.write(t_string + "\n")
                             file.write(f"Order condition met at {round(data, 3)}\n")
                             file.write(f"Position size: {round(order.amount, 3)} at {round(data, 3)}\n")
@@ -204,8 +209,12 @@ class SFStrategyI:
                     f"Wallet: {round(wallet, 5)}",
                 )
                 if env == "server":
+                    # Check if file exists
+                    if not os.path.exists('io/live_test/log/live_test_log_SFStrategyI' + self.run_name + '.txt'):
+                        with open('io/live_test/log/live_test_log_SFStrategyI' + self.run_name + '.txt', 'w') as file:
+                            file.write("Log file for the live test of the SFStrategyI\n\n\n")
                     # Log the order
-                    with open('io/live_test/live_test_log_SFStrategy.txt', 'a') as file:
+                    with open('io/live_test/log/live_test_log_SFStrategyI' + self.run_name + '.txt', 'a') as file:
                         file.write(t_string + "\n")
                         file.write(f"Order condition met at {round(data, 3)}\n")
                         file.write(f"Position size: {round(order.amount, 3)} at {round(data, 3)}\n")
@@ -246,8 +255,12 @@ class SFStrategyI:
                     f"Wallet: {round(wallet, 5)}",
                 )
                 if env == "server":
+                    # Check if file exists
+                    if not os.path.exists('io/live_test/log/live_test_log_SFStrategyI' + self.run_name + '.txt'):
+                        with open('io/live_test/log/live_test_log_SFStrategyI' + self.run_name + '.txt', 'w') as file:
+                            file.write("Log file for the live test of the SFStrategyI\n\n\n")
                     # Log the order
-                    with open('io/live_test/live_test_log_SFStrategy.txt', 'a') as file:
+                    with open('io/live_test/log/live_test_log_SFStrategy' + self.run_name + '.txt', 'a') as file:
                         file.write(t_string + "\n")
                         file.write(f"Position closing condition met at {round(data, 3)}\n")
                         file.write(f"Position size: {round(position.amount, 3)} at {round(data, 3)}\n")
@@ -293,8 +306,12 @@ class SFStrategyI:
                     f"Wallet: {round(wallet, 5)}",
                 )
                 if env == "server":
+                    # Check if file exists
+                    if not os.path.exists('io/live_test/log/live_test_log_SFStrategyI' + self.run_name + '.txt'):
+                        with open('io/live_test/log/live_test_log_SFStrategyI' + self.run_name + '.txt', 'w') as file:
+                            file.write("Log file for the live test of the SFStrategyI\n\n\n")
                     # Log the order
-                    with open('io/live_test/live_test_log_SFStrategy.txt', 'a') as file:
+                    with open('io/live_test/live_test_log_SFStrategy' + self.run_name + '.txt', 'a') as file:
                         file.write(t_string + "\n")
                         file.write(f"Position closing condition met at {round(data, 3)}\n")
                         file.write(f"Position size: {round(position.amount, 3)} at {round(data, 3)}\n")
@@ -439,3 +456,6 @@ class SFStrategyI:
                                      mode='markers', name='Position', marker=dict(color='red')))
 
         fig.show()
+
+    def __str__(self):
+        return "SFStrategyI-" + self.run_name

@@ -2,6 +2,10 @@ from live_test import LiveTest
 from Strategies.SFStrategy import SFStrategy
 from Strategies.SFStrategy_I import SFStrategyI
 
+import datetime
+
+run_name = "ETH_USD_" + datetime.datetime.now().strftime("%d-%m-%Y-%H-%M-%S")
+
 strategy = SFStrategyI(buy_percentage=0.00025)
 wallet = 1000
 
