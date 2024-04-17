@@ -8,6 +8,12 @@ import json
 import sys
 import os
 
+# load environment variables
+from dotenv import load_dotenv
+
+load_dotenv()
+env = os.getenv("environment")
+
 # Get the current script's directory
 current_dir = os.path.dirname(os.path.abspath(__file__))
 # Get the parent directory by going one level up
@@ -17,6 +23,8 @@ sys.path.append(parent_dir)
 
 from utils.utils import *
 from utils.notifications import send_message
+
+
 
 class LiveTest():
     def __init__(self, index, strategy, wallet):
@@ -55,7 +63,8 @@ class LiveTest():
             price, t = self.get_price()
             t_string = f"{t.day}/{t.month}/{t.year}-{t.hour}:{t.minute}:{t.second}"
 
-            print_yellow(f"------- Update at " + t_string + " -------")
+            if env == "local":
+                print_yellow(f"------- Update at " + t_string + " -------")
 
             self.orders, self.positions, self.wallet = self.strategy.check_conditions(
                 orders=self.orders,
@@ -66,19 +75,22 @@ class LiveTest():
             )
 
             # ----------------- Print the results ----------------- #
-            print(f"Wallet: {self.wallet}")
-            print(f"Price: {price}")
-            print(f"Orders[0]: {self.orders[0]}")
+            if env == "local":
+                print(f"Wallet: {self.wallet}")
+                print(f"Price: {price}")
+                print(f"Orders[0]: {self.orders[0]}")
 
             # Positions
             open_pos_ = 0
             for pos_ in self.positions:
                 if pos_.status == 'open':
                     open_pos_ += 1
-            print(f"Positions:")
-            print("      open: ", open_pos_)
-            print("      closed: ", len(self.positions) - open_pos_)
-            print("      total: ", len(self.positions))
+
+            if env == "local":
+                print(f"Positions:")
+                print("      open: ", open_pos_)
+                print("      closed: ", len(self.positions) - open_pos_)
+                print("      total: ", len(self.positions))
 
             # PNLs
             # PNL of closed pos
@@ -90,10 +102,11 @@ class LiveTest():
                 elif pos_.status == 'open':
                     pnl_open += pos_.pnl(price)
 
-            print(f"PNL of positions")
-            print("       Closed: ", pnl_closed)
-            print("       Open: ", pnl_open)
-            print("       Total: ", pnl_closed + pnl_open)
+            if env == "local":
+                print(f"PNL of positions")
+                print("       Closed: ", pnl_closed)
+                print("       Open: ", pnl_open)
+                print("       Total: ", pnl_closed + pnl_open)
 
             # Toral value of positions
             tot_ = 0
@@ -101,8 +114,9 @@ class LiveTest():
                 if pos_.status == 'open':
                     tot_ += pos_.dollars_value(price)
 
-            print(f"Total value of positions: {tot_}")
-            print(f"Total value of the wallet (pos+wallet): {tot_ + self.wallet}")
+            if env == "local":
+                print(f"Total value of positions: {tot_}")
+                print(f"Total value of the wallet (pos+wallet): {tot_ + self.wallet}")
 
             if t.second == 30:
                 title = "Recurrent update\n\n"
