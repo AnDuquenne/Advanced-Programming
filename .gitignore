@@ -6,4 +6,5 @@ Strategies/wandb/*
 .env
 
 # Ignore the txt file in the io directory
-io/*.txt
+io/live_test/log/*.txt
+io/live_test/perf/*.csv
