@@ -28,8 +28,11 @@ async def send_telegram_message(title, message):
 
 
 def send_message(title, message):
-    asyncio.get_event_loop().run_until_complete(send_telegram_message(title, message))
-    pass
+    try:
+        asyncio.get_event_loop().run_until_complete(send_telegram_message(title, message))
+    except:
+        print("Error sending message")
+        pass
 
 
 if __name__ == "__main__":
