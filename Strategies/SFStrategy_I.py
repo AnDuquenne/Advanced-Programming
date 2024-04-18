@@ -258,7 +258,7 @@ class SFStrategyI:
                     if not os.path.exists('io/live_test/log/live_test_log_SFStrategyI' + self.run_name + '.txt'):
                         subprocess.run(["touch", 'io/live_test/log/live_test_log_SFStrategyI' + self.run_name + '.txt'])
                     # Log the order
-                    with open('io/live_test/log/live_test_log_SFStrategy' + self.run_name + '.txt', 'a') as file:
+                    with open('io/live_test/log/live_test_log_SFStrategyI' + self.run_name + '.txt', 'a') as file:
                         file.write(t_string + "\n")
                         file.write(f"Position closing condition met at {round(data, 3)}\n")
                         file.write(f"Position size: {round(position.amount, 3)} at {round(data, 3)}\n")
@@ -308,7 +308,7 @@ class SFStrategyI:
                     if not os.path.exists('io/live_test/log/live_test_log_SFStrategyI' + self.run_name + '.txt'):
                         subprocess.run(["touch", 'io/live_test/log/live_test_log_SFStrategyI' + self.run_name + '.txt'])
                     # Log the order
-                    with open('io/live_test/live_test_log_SFStrategy' + self.run_name + '.txt', 'a') as file:
+                    with open('io/live_test/live_test_log_SFStrategyI' + self.run_name + '.txt', 'a') as file:
                         file.write(t_string + "\n")
                         file.write(f"Position closing condition met at {round(data, 3)}\n")
                         file.write(f"Position size: {round(position.amount, 3)} at {round(data, 3)}\n")
