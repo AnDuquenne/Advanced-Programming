@@ -166,7 +166,7 @@ class SFStrategyI:
                         # Log the order
                         with open('io/live_test/log/live_test_log_SFStrategyI' + self.run_name + '.txt', 'a') as file:
                             file.write(t_string + "\n")
-                            file.write(f"Order condition met at {round(data, 3)}\n")
+                            file.write(f"LONG Order condition met at {round(data, 3)}\n")
                             file.write(f"Position size: {round(order.amount, 3)} at {round(data, 3)}\n")
                             file.write(f"Position value: {round(order.amount * data, 3)}\n")
                             file.write(f"Wallet: {round(wallet, 5)}\n\n\n")
@@ -215,7 +215,7 @@ class SFStrategyI:
                     # Log the order
                     with open('io/live_test/log/live_test_log_SFStrategyI' + self.run_name + '.txt', 'a') as file:
                         file.write(t_string + "\n")
-                        file.write(f"Order condition met at {round(data, 3)}\n")
+                        file.write(f"SHORT Order condition met at {round(data, 3)}\n")
                         file.write(f"Position size: {round(order.amount, 3)} at {round(data, 3)}\n")
                         file.write(f"Position value: {round(order.amount * data, 3)}\n")
                         file.write(f"Wallet: {round(wallet, 5)}\n\n\n")
@@ -260,7 +260,7 @@ class SFStrategyI:
                     # Log the order
                     with open('io/live_test/log/live_test_log_SFStrategyI' + self.run_name + '.txt', 'a') as file:
                         file.write(t_string + "\n")
-                        file.write(f"Position closing condition met at {round(data, 3)}\n")
+                        file.write(f"LONG Position closing condition met at {round(data, 3)}\n")
                         file.write(f"Position size: {round(position.amount, 3)} at {round(data, 3)}\n")
                         file.write(f"Position value: {round(position.amount * data, 3)}\n")
                         file.write(f"Wallet: {round(wallet, 5)}\n\n\n")
@@ -310,7 +310,7 @@ class SFStrategyI:
                     # Log the order
                     with open('io/live_test/live_test_log_SFStrategyI' + self.run_name + '.txt', 'a') as file:
                         file.write(t_string + "\n")
-                        file.write(f"Position closing condition met at {round(data, 3)}\n")
+                        file.write(f"SHORT Position closing condition met at {round(data, 3)}\n")
                         file.write(f"Position size: {round(position.amount, 3)} at {round(data, 3)}\n")
                         file.write(f"Position value: {round(position.amount * data, 3)}\n")
                         file.write(f"Wallet: {round(wallet, 5)}\n\n\n")

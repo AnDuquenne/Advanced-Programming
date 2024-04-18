@@ -62,6 +62,7 @@ class LiveTest():
     def run(self):
 
         notif_sent = False
+        iter_log = 0
 
         # Every x seconds get the index price
         while True:
@@ -128,7 +129,6 @@ class LiveTest():
             if t.second == 0:
                 notif_sent = False
 
-            iter_log = 0
             if t.second == 30 and t.minute % 2 == 0 and not notif_sent:
                 title = emoji.emojize(":clock1:") + " Recurrent update " + emoji.emojize(":clock1:") + "\n\n"
                 msg = ""
