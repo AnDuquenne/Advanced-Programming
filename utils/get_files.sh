@@ -1,0 +1,2 @@
+rm -r C:\Users\dadou\Documents\Github\Advanced-Programming\io\live_test\*
+scp -r debian@57.128.173.12:~/Advanced-Programming/io/live_test/* C:\Users\dadou\Documents\Github\Advanced-Programming\io\live_test
