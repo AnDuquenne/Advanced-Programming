@@ -23,6 +23,7 @@ import emoji
 
 # laod env variables
 import os
+import subprocess
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -136,9 +137,7 @@ class SFStrategy:
                     if env == "server":
                         # Check if file exists
                         if not os.path.exists('io/live_test/log/live_test_log_SFStrategy' + self.run_name + '.txt'):
-                            # Create the file
-                            with open('io/live_test/log/live_test_log_SFStrategy' + self.run_name + '.txt', 'w') as file:
-                                file.write("Log of the SFStrategy\n\n")
+                            subprocess.run(["touch", 'io/live_test/log/live_test_log_SFStrategyI' + self.run_name + '.txt'])
                         # Log the order
                         with open('io/live_test/log/live_test_log_SFStrategy' + self.run_name + '.txt', 'a') as file:
                             file.write(t_string + "\n")
@@ -185,9 +184,7 @@ class SFStrategy:
                 if env == "server":
                     # Check if file exists
                     if not os.path.exists('io/live_test/log/live_test_log_SFStrategy' + self.run_name + '.txt'):
-                        # Create the file
-                        with open('io/live_test/log/live_test_log_SFStrategy' + self.run_name + '.txt', 'w') as file:
-                            file.write("Log of the SFStrategy\n\n")
+                        subprocess.run(["touch", 'io/live_test/log/live_test_log_SFStrategy' + self.run_name + '.txt'])
                     # Log the order
                     with open('io/live_test/log/live_test_log_SFStrategy' + self.run_name + '.txt', 'a') as file:
                         file.write(t_string + "\n")

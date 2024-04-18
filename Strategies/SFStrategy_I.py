@@ -21,6 +21,7 @@ import emoji
 
 # laod env variables
 import os
+import subprocess
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -161,8 +162,7 @@ class SFStrategyI:
                     if env == "server":
                         # Check if file exists
                         if not os.path.exists('io/live_test/log/live_test_log_SFStrategyI' + self.run_name + '.txt'):
-                            with open('io/live_test/log/live_test_log_SFStrategyI' + self.run_name + '.txt', 'w') as file:
-                                file.write("Log file for the live test of the SFStrategyI\n\n\n")
+                            subprocess.run(["touch", 'io/live_test/log/live_test_log_SFStrategyI' + self.run_name + '.txt'])
                         # Log the order
                         with open('io/live_test/log/live_test_log_SFStrategyI' + self.run_name + '.txt', 'a') as file:
                             file.write(t_string + "\n")
@@ -211,8 +211,7 @@ class SFStrategyI:
                 if env == "server":
                     # Check if file exists
                     if not os.path.exists('io/live_test/log/live_test_log_SFStrategyI' + self.run_name + '.txt'):
-                        with open('io/live_test/log/live_test_log_SFStrategyI' + self.run_name + '.txt', 'w') as file:
-                            file.write("Log file for the live test of the SFStrategyI\n\n\n")
+                        subprocess.run(["touch", 'io/live_test/log/live_test_log_SFStrategyI' + self.run_name + '.txt'])
                     # Log the order
                     with open('io/live_test/log/live_test_log_SFStrategyI' + self.run_name + '.txt', 'a') as file:
                         file.write(t_string + "\n")
@@ -257,8 +256,7 @@ class SFStrategyI:
                 if env == "server":
                     # Check if file exists
                     if not os.path.exists('io/live_test/log/live_test_log_SFStrategyI' + self.run_name + '.txt'):
-                        with open('io/live_test/log/live_test_log_SFStrategyI' + self.run_name + '.txt', 'w') as file:
-                            file.write("Log file for the live test of the SFStrategyI\n\n\n")
+                        subprocess.run(["touch", 'io/live_test/log/live_test_log_SFStrategyI' + self.run_name + '.txt'])
                     # Log the order
                     with open('io/live_test/log/live_test_log_SFStrategy' + self.run_name + '.txt', 'a') as file:
                         file.write(t_string + "\n")
@@ -308,8 +306,7 @@ class SFStrategyI:
                 if env == "server":
                     # Check if file exists
                     if not os.path.exists('io/live_test/log/live_test_log_SFStrategyI' + self.run_name + '.txt'):
-                        with open('io/live_test/log/live_test_log_SFStrategyI' + self.run_name + '.txt', 'w') as file:
-                            file.write("Log file for the live test of the SFStrategyI\n\n\n")
+                        subprocess.run(["touch", 'io/live_test/log/live_test_log_SFStrategyI' + self.run_name + '.txt'])
                     # Log the order
                     with open('io/live_test/live_test_log_SFStrategy' + self.run_name + '.txt', 'a') as file:
                         file.write(t_string + "\n")
