@@ -142,7 +142,7 @@ class Position:
 
 
 class Order:
-    def __init__(self, time, price, amount, direction):
+    def __init__(self, time, price: float, amount: float, direction: str):
         self._time = time
         self._price = price
         self._amount = amount
@@ -194,3 +194,4 @@ class Order:
             self._time = value
         else:
             raise ValueError("Time must be a float")
+

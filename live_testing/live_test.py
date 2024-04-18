@@ -164,9 +164,10 @@ class LiveTest():
                                 f"{len(self.positions)},"
                                 f"{pnl_closed},"
                                 f"{pnl_open},"
+                                f"{pnl_closed + pnl_open},"
                                 f"{tot_ + self.wallet}\n")
 
             if env == "local":
                 time.sleep(5)
             else:
-                time.sleep(0.25)
+                time.sleep(0.5)
