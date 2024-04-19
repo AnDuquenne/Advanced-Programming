@@ -1,6 +1,5 @@
 import numpy as np
 
-from tqdm import tqdm
 
 class EMA:
     """
@@ -38,7 +37,6 @@ class EMA:
         return self.ema
 
 
-
 class WMA:
     """
     A class defining the Weighted Moving Average (WMA) of a time series.
@@ -65,6 +63,8 @@ class WMA:
         Return the WMA values.
         """
         return np.round(self.wma, 4)
+
+
 class MACD:
     """
     A class defining the Moving Average Convergence Divergence (MACD) of a time series.
@@ -78,21 +78,18 @@ class MACD:
         self.signal_line = EMA(self.macd, 9).get_ema
         self.histogram = self.macd - self.signal_line
 
-    @property
     def get_macd(self):
         """
         Return the MACD values.
         """
         return np.round(self.macd, 4)
 
-    @property
     def get_signal_line(self):
         """
         Return the signal line values.
         """
         return np.round(self.signal_line, 4)
 
-    @property
     def get_histogram(self):
         """
         Return the histogram values.
@@ -149,7 +146,6 @@ class RSI:
             # if RS == 0 or RS == np.inf or RS == np.nan or RS == -np.inf:
             #     print(t, RS, self.rsi[t])
 
-    @property
     def get_rsi(self):
         """
         Return the RSI values.
@@ -180,17 +176,18 @@ class StochasticRSI:
             max_RSI = max(self.RSI[t - self.window:t])
             self.stochastic_rsi[t] = (self.RSI[t] - min_RSI) / (max_RSI - min_RSI) if max_RSI - min_RSI != 0 else 0
 
-    @property
     def get_stochastic_rsi(self):
         """
         Return the Stochastic RSI values.
         """
         return np.round(self.stochastic_rsi, 4)
 
+
 class DPO:
     """
     A class defining the Detrended Price Oscillator (DPO) of a time series.
     """
+
     def __init__(self, time_series, window):
         self.time_series = time_series
         self.window = window
@@ -206,7 +203,6 @@ class DPO:
             simple_moving_average = np.mean(self.time_series[t - self.window:t])
             self.dpo[t] = self.time_series[t - self.window // 2] - simple_moving_average
 
-    @property
     def get_dpo(self):
         """
         Return the DPO values.
@@ -218,6 +214,7 @@ class CC:
     """
     A class defining the Coppock Curve (CC) of a time series.
     """
+
     def __init__(self, time_series, window):
         self.time_series = time_series
         self.window = window
@@ -237,7 +234,6 @@ class CC:
         # 10 periods weighted moving average
         self.cc = WMA(self.cc, 10).get_wma
 
-    @property
     def get_cc(self):
         """
         Return the CC values.
