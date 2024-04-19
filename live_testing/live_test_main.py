@@ -6,8 +6,6 @@ import argparse
 
 import datetime
 
-run_name = "ETH_USD_" + datetime.datetime.now().strftime("%d-%m-%Y-%H-%M-%S")
-
 
 if __name__ == "__main__":
 
@@ -20,6 +18,8 @@ if __name__ == "__main__":
     strat_ = args.strategy
     buy_percentage_ = args.buy_percentage
     wallet = args.wallet
+
+    run_name = datetime.datetime.now().strftime("%d-%m-%Y-%H-%M-%S") + strat_ + "__" + str(buy_percentage_)
 
     strategy = None
     if strat_ == "SFStrategyI":
