@@ -1,3 +1,7 @@
+"""
+Transformer model for stock forecasting trainer
+"""
+
 import numpy as np
 import torch
 

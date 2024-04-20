@@ -136,10 +136,10 @@ class SFStrategy:
                     )
                     if env == "server":
                         # Check if file exists
-                        if not os.path.exists('io/live_test/log/live_test_log_SFStrategyI' + self.run_name + '.csv'):
+                        if not os.path.exists('io/live_test/log/live_test_log_SFStrategy' + self.run_name + '.csv'):
                             subprocess.run(
-                                ["touch", 'io/live_test/log/live_test_log_SFStrategyI' + self.run_name + '.csv'])
-                            with open('io/live_test/log/live_test_log_SFStrategyI' + self.run_name + '.csv',
+                                ["touch", 'io/live_test/log/live_test_log_SFStrategy' + self.run_name + '.csv'])
+                            with open('io/live_test/log/live_test_log_SFStrategy' + self.run_name + '.csv',
                                       'w') as file:
                                 file.write("time,"
                                            "event,"
@@ -150,7 +150,7 @@ class SFStrategy:
                                            "infos"
                                            "\n")
                         # Log the order
-                        with open('io/live_test/log/live_test_log_SFStrategyI' + self.run_name + '.csv', 'a') as file:
+                        with open('io/live_test/log/live_test_log_SFStrategy' + self.run_name + '.csv', 'a') as file:
                             file.write(t_string + ",")
                             file.write(f"LONG ORDER,")
                             file.write(f"{round(data, 3)},")
@@ -197,9 +197,9 @@ class SFStrategy:
                 )
                 if env == "server":
                     # Check if file exists
-                    if not os.path.exists('io/live_test/log/live_test_log_SFStrategyI' + self.run_name + '.csv'):
-                        subprocess.run(["touch", 'io/live_test/log/live_test_log_SFStrategyI' + self.run_name + '.csv'])
-                        with open('io/live_test/log/live_test_log_SFStrategyI' + self.run_name + '.csv', 'w') as file:
+                    if not os.path.exists('io/live_test/log/live_test_log_SFStrategy' + self.run_name + '.csv'):
+                        subprocess.run(["touch", 'io/live_test/log/live_test_log_SFStrategy' + self.run_name + '.csv'])
+                        with open('io/live_test/log/live_test_log_SFStrategy' + self.run_name + '.csv', 'w') as file:
                             file.write("time,"
                                        "event,"
                                        "event_price,"
@@ -209,7 +209,7 @@ class SFStrategy:
                                        "infos"
                                        "\n")
                     # Log the order
-                    with open('io/live_test/log/live_test_log_SFStrategyI' + self.run_name + '.csv',
+                    with open('io/live_test/log/live_test_log_SFStrategy' + self.run_name + '.csv',
                               'a') as file:
                         file.write(t_string + ",")
                         file.write(f"LONG POSITION,")
