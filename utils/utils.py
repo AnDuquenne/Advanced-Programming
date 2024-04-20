@@ -72,3 +72,16 @@ def log_gradient_norms(model):
 
 def generate_square_subsequent_mask(dim1, dim2):
     return torch.triu(torch.ones(dim1, dim2) * float('-inf'), diagonal=1)
+
+
+def get_timestamps(time_delta):
+    """
+    Return the current timestamp from unix epoch in milliseconds, and the timestamp from time_delta ago.
+    :return:
+    """
+    assert isinstance(time_delta, datetime.timedelta), "The input must be a datetime.timedelta object"
+    timestamp_1 = int(datetime.datetime.now().timestamp() * 1000)
+    timestamp_2 = int((datetime.datetime.now() - time_delta).timestamp() * 1000)
+
+    # Return the t0, t1 timestamps
+    return timestamp_2, timestamp_1

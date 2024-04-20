@@ -6,7 +6,6 @@ import argparse
 
 import datetime
 
-from tqdm import tqdm
 
 if __name__ == "__main__":
 

@@ -28,7 +28,6 @@ from utils.utils import *
 from utils.notifications import send_message
 
 
-
 class LiveTest():
     def __init__(self, index, strategy, wallet):
         self.index = index
@@ -40,6 +39,12 @@ class LiveTest():
         self.strategy = strategy
 
     async def call_api(self, msg):
+        """
+        Call the deribit API
+
+        :param msg: request message
+        :return:
+        """
         async with websockets.connect('wss://test.deribit.com/ws/api/v2') as websocket:
             await websocket.send(msg)
             while websocket.open:
@@ -49,6 +54,12 @@ class LiveTest():
                 return index_price
 
     def get_price(self):
+        """
+        Get the index price at the current time.
+
+        This method uses the API provided by www.deribit.com as this was the chosen platform to perform the live test.
+        :return:
+        """
         msg = \
             {"jsonrpc": "2.0",
              "method": "public/get_index_price",
@@ -59,7 +70,61 @@ class LiveTest():
         price = asyncio.get_event_loop().run_until_complete(self.call_api(json.dumps(msg)))
         return price, datetime.datetime.now()
 
+    def get_historical_price(self, days: int, minutes: int, interval: str = "5"):
+        """
+        Get the historical price of the index for the last x days + y minutes.
+
+        This method uses the API provided by www.bybit.com, as deribit api fails to provide correct data.
+        https://bybit-exchange.github.io/docs/api-explorer/v5/market/mark-kline
+            Response Parameters
+            -------------------
+            Parameter	Type	Comments
+            category	string	Product type
+            symbol	string	Symbol name
+            list	array
+            An string array of individual candle
+            Sort in reverse by startTime
+            > list[0]: startTime	string	Start time of the candle (ms)
+            > list[1]: openPrice	string	Open price
+            > list[2]: highPrice	string	Highest price
+            > list[3]: lowPrice	string	Lowest price
+            > list[4]: closePrice	string	Close price. Is the last traded price when the candle is not closed
+        :param days: number of days to get the historical price
+        :param minutes: number of minutes to get the historical price
+        :param interval: interval minutes of the candles
+        :return:
+        """
+        # Get the current timestamp and the timestamp of the last x days
+        t0, t1 = get_timestamps(datetime.timedelta(days=days, minutes=minutes))
+
+        url = "https://api-testnet.bybit.com/v5/market/mark-price-kline"
+
+        # Index does not have an underscore on bybit, and are written in uppercase
+        bybit_index = self.index.upper().replace("_", "")
+
+        params = {
+            "symbol": bybit_index,
+            "interval": interval,
+            "start": t0,
+            "end": t1,
+            "limit": 1000
+        }
+
+        response = requests.request("GET", url, params=params)
+        response = json.loads(response.text)["result"]["list"]  # list of candles (see above)
+
+        # first element is the most recent candle, we reverse the list
+        response = response[::-1]
+
+        close_prices = [float(candle[4]) for candle in response]
+
+        return close_prices
+
     def run(self):
+        """
+        Runs a live test
+        :return:
+        """
 
         notif_sent = False
         iter_log = 0
