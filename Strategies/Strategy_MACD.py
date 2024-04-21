@@ -39,6 +39,7 @@ sys.path.append(parent_dir)
 
 from utils.technical_analysis import MACD
 
+
 class StrategyMACD:
 
     def __init__(self, run_name, data_path=None, buy_percentage=0.01, exposure=2):
@@ -153,10 +154,10 @@ class StrategyMACD:
             )
             if env == "server":
                 # Check if file exists
-                if not os.path.exists('io/live_test/log/live_test_log_StrategyMACD' + self.run_name + '.csv'):
+                if not os.path.exists('io/live_test/log/live_test_log_' + self.run_name + '.csv'):
                     subprocess.run(
-                        ["touch", 'io/live_test/log/live_test_log_StrategyMACD' + self.run_name + '.csv'])
-                    with open('io/live_test/log/live_test_log_StrategyMACD' + self.run_name + '.csv',
+                        ["touch", 'io/live_test/log/live_test_log_' + self.run_name + '.csv'])
+                    with open('io/live_test/log/live_test_log_' + self.run_name + '.csv',
                               'w') as file:
                         file.write("time,"
                                    "event,"
@@ -167,7 +168,7 @@ class StrategyMACD:
                                    "infos"
                                    "\n")
                 # Log the order
-                with open('io/live_test/log/live_test_log_StrategyMACD' + self.run_name + '.csv', 'a') as file:
+                with open('io/live_test/log/live_test_log_' + self.run_name + '.csv', 'a') as file:
                     file.write(t_string + ",")
                     file.write(f"LONG ORDER,")
                     file.write(f"{round(data, 3)},")
@@ -193,10 +194,10 @@ class StrategyMACD:
                 )
                 if env == "server":
                     # Check if file exists
-                    if not os.path.exists('io/live_test/log/live_test_log_StrategyMACD' + self.run_name + '.csv'):
+                    if not os.path.exists('io/live_test/log/live_test_log_' + self.run_name + '.csv'):
                         subprocess.run(
-                            ["touch", 'io/live_test/log/live_test_log_StrategyMACD' + self.run_name + '.csv'])
-                        with open('io/live_test/log/live_test_log_StrategyMACD' + self.run_name + '.csv',
+                            ["touch", 'io/live_test/log/live_test_log_' + self.run_name + '.csv'])
+                        with open('io/live_test/log/live_test_log_' + self.run_name + '.csv',
                                   'w') as file:
                             file.write("time,"
                                        "event,"
@@ -207,7 +208,7 @@ class StrategyMACD:
                                        "infos"
                                        "\n")
                     # Log the order
-                    with open('io/live_test/log/live_test_log_StrategyMACD' + self.run_name + '.csv',
+                    with open('io/live_test/log/live_test_log_' + self.run_name + '.csv',
                               'a') as file:
                         file.write(t_string + ",")
                         file.write(f"LONG POSITION,")
@@ -227,4 +228,4 @@ class StrategyMACD:
         return order_list, position_list, wallet
 
     def __str__(self):
-        return "SFStrategy_MACD-" + self.run_name
+        return "Strategy_MACD-" + self.run_name
