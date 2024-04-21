@@ -1,9 +1,9 @@
 """
-This file contains the SFStrategy class. This class is a simple straightforward strategy.
-It creates 100 orders at the opening price of the index. Each order is x% below the previous one.
-When the index price reaches an order price, the order is executed and a position is created.
-The position is closed when the index price reaches the closing price of the position.
-When a position is closed, the order book is replaced using the last price of the closing position as reference.
+This file contains the StrategyMACD class.
+When the MACD signal is triggered, the strategy opens a long position.
+The long position is closed when the index price is above the closing price.
+The closing price is the price at which the position was opened plus a buy_percentage.
+The MACD signal is triggered when the histogram value is below 0 and greater than the one of the previous period.
 """
 
 import numpy as np
