@@ -1,6 +1,7 @@
 from live_test import LiveTest
 from Strategies.SFStrategy import SFStrategy
 from Strategies.SFStrategy_I import SFStrategyI
+from Strategies.Strategy_MACD import StrategyMACD
 
 import argparse
 
@@ -26,6 +27,8 @@ if __name__ == "__main__":
         strategy = SFStrategyI(run_name=run_name, buy_percentage=buy_percentage_)
     elif strat_ == "SFStrategy":
         strategy = SFStrategy(run_name=run_name, buy_percentage=buy_percentage_)
+    elif strat_ == "StrategyMACD":
+        strategy = StrategyMACD(run_name=run_name, buy_percentage=buy_percentage_)
 
     # Create the live test object
     live_test = LiveTest("eth_usd", strategy, wallet)

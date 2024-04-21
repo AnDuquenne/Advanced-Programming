@@ -22,7 +22,7 @@ from utils.notifications import send_message
 import emoji
 
 # laod env variables
-import os
+import os, sys
 import subprocess
 from dotenv import load_dotenv
 
@@ -30,8 +30,16 @@ load_dotenv()
 
 env = os.getenv("environment")
 
+# Get the current script's directory
+current_dir = os.path.dirname(os.path.abspath(__file__))
+# Get the parent directory by going one level up
+parent_dir = os.path.dirname(current_dir)
+# Add the parent directory to sys.path
+sys.path.append(parent_dir)
 
-class SFStrategy:
+from utils.technical_analysis import MACD
+
+class StrategyMACD:
 
     def __init__(self, run_name, data_path=None, buy_percentage=0.01, exposure=2):
         """
@@ -44,6 +52,7 @@ class SFStrategy:
         :param exposure: Wallet exposure to the orders
         ex. if exposure = 0.5, 50% of the wallet is open to create the order book
         """
+        # For back testing
         if data_path is not None:
             self.data_path = data_path
             self.df = pd.read_csv(data_path)
@@ -55,12 +64,36 @@ class SFStrategy:
             self.positions = []
             self.orders = []
 
-            self.wallet = 10000  # For backtest only
+            self.wallet = 10000
 
         self.run_name = run_name
         self.buy_percentage = buy_percentage
         self.exposure = exposure  # x % of the wallet is open to create orders
 
+        self.last_macd_hist_value = None
+
+    def get_macd_histogram(self, history):
+        """
+        Get the historical MACD values for the last period.
+        :return:
+        """
+        # Get the historical price
+        close_prices = history
+
+        # Compute the MACD
+        macd = MACD(close_prices)
+        return macd.get_histogram()
+
+    def get_macd_trigger(self, history):
+        """
+        Get the MACD trigger value.
+        :return: True if the MACD signal is triggered
+        """
+        histogram = self.get_macd_histogram(history)
+        if histogram[-3] > histogram[-2] and 0 >= histogram[-1] > histogram[-2]:
+            return True
+        else:
+            return False
 
     def check_conditions(self, orders, positions, data, time, wallet):
         """
@@ -79,85 +112,69 @@ class SFStrategy:
         wallet = wallet
         dollars_value = 0
 
+        history = data['history']
+        data = data['price']
+
         t_string = f"{time.day}/{time.month}/{time.year}-{time.hour}:{time.minute}:{time.second}"
 
         # Amount of index to buy per order
-        am_ = wallet * self.exposure / 100 / data
+        am_ = wallet * self.exposure / 50 / data
 
-        # If the order list and the position list are empty, create the orders
-        # Create 100 orders
-        if len(order_list) == 0 and len(position_list) == 0:
-            for value in [data * (1 - (i * self.buy_percentage)) for i in range(1, 100)]:
-                print(f"Creating order at {value}")
+        # ------------------------------------ Check conditions to open a pos ------------------------------------ #
 
-                order_list.append(Order(
-                    time=time,
-                    price=value,
-                    amount=am_,
-                    direction='long'))
+        # Check if the MACD signal is triggered
+        trigger = self.get_macd_trigger(history)
 
-        # Check orders
-        for order in order_list:
-            # Case 1: The order is a long order and the index price is below the order price -> execute the order
-            if order.direction == 'long' and data <= order.price:
-                if wallet >= order.amount:
+        if trigger and self.last_macd_hist_value != history[-2] and wallet >= am_ * data:
+            # If the MACD signal is triggered, open a position
+            position_list.append(Position(
+                opening_time=time,
+                opening_price=data,
+                amount=am_,
+                direction='long',
+                closing_price=data * (1 + self.buy_percentage)
+            ))
 
-                    # Print, notification and log the order
-                    print_green(emoji.emojize(":green_circle:") + t_string + f"Order condition met at {data}")
-                    print_green(f"\t Position size: {order.amount} at {data}")
-                    print_green(f"\t Position value: {order.amount * data}")
-                    send_message(
-                        emoji.emojize(":green_circle:") +
-                        f"Order condition met at {round(data, 3)}\n",
-                        f"Position size: {round(order.amount, 3)} at {round(data, 3)}\n"
-                        f"Position value: {round(order.amount * data, 3)}\n"
-                        f"Wallet: {round(wallet, 5)}",
-                    )
-                    if env == "server":
-                        # Check if file exists
-                        if not os.path.exists('io/live_test/log/live_test_log_' + self.run_name + '.csv'):
-                            subprocess.run(
-                                ["touch", 'io/live_test/log/live_test_log_' + self.run_name + '.csv'])
-                            with open('io/live_test/log/live_test_log_' + self.run_name + '.csv',
-                                      'w') as file:
-                                file.write("time,"
-                                           "event,"
-                                           "event_price,"
-                                           "position_size,"
-                                           "position_value,"
-                                           "wallet,"
-                                           "infos"
-                                           "\n")
-                        # Log the order
-                        with open('io/live_test/log/live_test_log_' + self.run_name + '.csv', 'a') as file:
-                            file.write(t_string + ",")
-                            file.write(f"LONG ORDER,")
-                            file.write(f"{round(data, 3)},")
-                            file.write(f"{round(order.amount, 3)},")
-                            file.write(f"{round(order.amount * data, 3)},")
-                            file.write(f"{round(wallet, 5)},")
-                            file.write(f"LONG Order condition met at {round(data, 3)}")
-                            file.write(f" -- From order created at {order.time}\n")
+            wallet -= am_ * data
 
-                    # Create a new position
-                    p = Position(
-                        opening_price=data,
-                        opening_time=time,
-                        amount=order.amount,
-                        direction="long",
-                        closing_price=data * (1 + self.buy_percentage)
-                    )
+            # Reset the last MACD histogram value
+            self.last_macd_hist_value = history[-2]
 
-                    # Add the position to the position list
-                    position_list.append(p)
-
-                    # Update the wallet value
-                    wallet -= order.amount * data
-
-                    # Remove the order from the order list
-                    del order_list[0]
-                else:
-                    print(f'Not enough money to buy {order.amount} at {data}')
+            # Print, notification and log the order
+            print_green(emoji.emojize(":green_circle:") + t_string + f"Position opening condition met at {data}")
+            print_green(f"\t Position size: {am_} at {data}")
+            print_green(f"\t Position value: {am_ * data}")
+            send_message(
+                emoji.emojize(":green_circle:") +
+                f"Order condition met at {round(data, 3)}\n",
+                f"Position size: {round(am_, 3)} at {round(data, 3)}\n"
+                f"Position value: {round(am_ * data, 3)}\n"
+                f"Wallet: {round(wallet, 5)}",
+            )
+            if env == "server":
+                # Check if file exists
+                if not os.path.exists('io/live_test/log/live_test_log_StrategyMACD' + self.run_name + '.csv'):
+                    subprocess.run(
+                        ["touch", 'io/live_test/log/live_test_log_StrategyMACD' + self.run_name + '.csv'])
+                    with open('io/live_test/log/live_test_log_StrategyMACD' + self.run_name + '.csv',
+                              'w') as file:
+                        file.write("time,"
+                                   "event,"
+                                   "event_price,"
+                                   "position_size,"
+                                   "position_value,"
+                                   "wallet,"
+                                   "infos"
+                                   "\n")
+                # Log the order
+                with open('io/live_test/log/live_test_log_StrategyMACD' + self.run_name + '.csv', 'a') as file:
+                    file.write(t_string + ",")
+                    file.write(f"LONG ORDER,")
+                    file.write(f"{round(data, 3)},")
+                    file.write(f"{round(am_, 3)},")
+                    file.write(f"{round(am_ * data, 3)},")
+                    file.write(f"{round(wallet, 5)},")
+                    file.write(f"Open position met\n")
 
         # Check positions
         for position in position_list:
@@ -176,9 +193,11 @@ class SFStrategy:
                 )
                 if env == "server":
                     # Check if file exists
-                    if not os.path.exists('io/live_test/log/live_test_log_' + self.run_name + '.csv'):
-                        subprocess.run(["touch", 'io/live_test/log/live_test_log_' + self.run_name + '.csv'])
-                        with open('io/live_test/log/live_test_log_' + self.run_name + '.csv', 'w') as file:
+                    if not os.path.exists('io/live_test/log/live_test_log_StrategyMACD' + self.run_name + '.csv'):
+                        subprocess.run(
+                            ["touch", 'io/live_test/log/live_test_log_StrategyMACD' + self.run_name + '.csv'])
+                        with open('io/live_test/log/live_test_log_StrategyMACD' + self.run_name + '.csv',
+                                  'w') as file:
                             file.write("time,"
                                        "event,"
                                        "event_price,"
@@ -188,7 +207,7 @@ class SFStrategy:
                                        "infos"
                                        "\n")
                     # Log the order
-                    with open('io/live_test/log/live_test_log_' + self.run_name + '.csv',
+                    with open('io/live_test/log/live_test_log_StrategyMACD' + self.run_name + '.csv',
                               'a') as file:
                         file.write(t_string + ",")
                         file.write(f"LONG POSITION,")
@@ -202,20 +221,10 @@ class SFStrategy:
                 position.close(data, time)
                 dollars_value += position.dollars_value(data)
 
-                # Reset the order book
-                order_list = []
-                for value in [data * (1 - (i * self.buy_percentage)) for i in range(1, 100)]:
-                    order_list.append(Order(
-                        time=time,
-                        price=value,
-                        amount=position.amount,
-                        direction='long'))
-
         # Update the wallet by adding profits made by closing positions
         wallet += dollars_value
 
         return order_list, position_list, wallet
-
 
     def __str__(self):
         return "SFStrategy_MACD-" + self.run_name

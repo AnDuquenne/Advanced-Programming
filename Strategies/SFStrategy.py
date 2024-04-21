@@ -33,7 +33,7 @@ env = os.getenv("environment")
 
 class SFStrategy:
 
-    def __init__(self, run_name, data_path=None, buy_percentage=0.01, exposure=2):
+    def __init__(self, run_name, data_path=None, buy_percentage=0.01, exposure=2, indicators=None):
         """
         Initialize the strategy
 
@@ -42,6 +42,7 @@ class SFStrategy:
         :param buy_percentage: The percentage range to create the orders
         ex. if buy_percentage = 0.01, the orders will be created at 1% intervals (200, 198, ...)
         :param exposure: Wallet exposure to the orders
+        :param indicators: The indicators to use for the strategy
         ex. if exposure = 0.5, 50% of the wallet is open to create the order book
         """
         if data_path is not None:

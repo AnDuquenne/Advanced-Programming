@@ -25,7 +25,10 @@ parent_dir = os.path.dirname(current_dir)
 sys.path.append(parent_dir)
 
 from utils.utils import *
+from utils.technical_analysis import MACD
 from utils.notifications import send_message
+
+from Strategies.Strategy_MACD import StrategyMACD
 
 
 class LiveTest():
@@ -92,7 +95,7 @@ class LiveTest():
         :param days: number of days to get the historical price
         :param minutes: number of minutes to get the historical price
         :param interval: interval minutes of the candles
-        :return:
+        :return: list of close prices for the granularity of the interval
         """
         # Get the current timestamp and the timestamp of the last x days
         t0, t1 = get_timestamps(datetime.timedelta(days=days, minutes=minutes))
@@ -133,6 +136,14 @@ class LiveTest():
         while True:
 
             price, t = self.get_price()
+            history = self.get_historical_price(days=0, minutes=60, interval="5")
+
+            if isinstance(self.strategy, StrategyMACD):
+                price = {
+                    "price": price,
+                    "history": history
+                }
+
             t_string = f"{t.day}/{t.month}/{t.year}-{t.hour}:{t.minute}:{t.second}"
 
             if env == "local":
@@ -143,14 +154,13 @@ class LiveTest():
                 positions=self.positions,
                 data=price,
                 time=t,
-                wallet=self.wallet
+                wallet=self.wallet,
             )
 
             # ----------------- Print the results ----------------- #
             if env == "local":
                 print(f"Wallet: {self.wallet}")
                 print(f"Price: {price}")
-                print(f"Orders[0]: {self.orders[0]}")
 
             # Positions
             open_pos_ = 0
