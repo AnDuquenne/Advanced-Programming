@@ -6,25 +6,18 @@ The closing price is the price at which the position was opened plus a buy_perce
 The MACD signal is triggered when the histogram value is below 0 and greater than the one of the previous period.
 """
 
-import numpy as np
-import pandas as pd
-
-import plotly.graph_objects as go
-from plotly.subplots import make_subplots
-
-from tqdm import tqdm
-
-from utils.market import *
-from utils.utils import *
-
-from utils.notifications import send_message
+# load env variables
+import os
+import subprocess
+import sys
 
 import emoji
-
-# laod env variables
-import os, sys
-import subprocess
+import pandas as pd
 from dotenv import load_dotenv
+
+from utils.market import *
+from utils.notifications import send_message
+from utils.utils import *
 
 load_dotenv()
 

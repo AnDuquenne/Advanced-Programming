@@ -3,16 +3,30 @@ data_path:
     1min:
       raw: "../Data/crypto-1min/btc-min1/raw_data/"
       cleaned: "../Data/crypto-1min/btc-min1/cleaned_data/"
+      neural_fc: "../Data/crypto-1min/btc-min1/neural_data_fc/"
       neural_LSTM: "../Data/crypto-1min/btc-min1/neural_data_LSTM/"
       neural_transformers: "../Data/crypto-1min/btc-min1/neural_data_transformers/"
   ETH:
     1min:
       raw: "../Data/crypto-1min/eth-min1/raw_data/"
       cleaned: "../Data/crypto-1min/eth-min1/cleaned_data/"
+      neural_fc: "../Data/crypto-1min/eth-min1/neural_data_fc/"
       neural_LSTM: "../Data/crypto-1min/eth-min1/neural_data_LSTM/"
       neural_transformers: "../Data/crypto-1min/eth-min1/neural_data_transformers/"
 
 Strategy:
+  FC:
+    data_path_X: "Data/crypto-1min/eth-min1/neural_data_FC/ETH_MACD_march2024_X.pt"
+    data_path_y: "Data/crypto-1min/eth-min1/neural_data_FC/ETH_MACD_march2024_y.pt"
+    weights_path: "io/FC/Weights/"
+    load_weights: True
+    batch_size: 64
+    learning_rate: 0.001
+    nb_epochs: 200
+    hidden_size: 15
+    num_layers: 10
+    dropout: 0.2
+    input_size: 1
   LSTM:
     data_path_X: "Data/crypto-1min/eth-min1/neural_data_LSTM/ETH_MACD_march2024_X.pt"
     data_path_y: "Data/crypto-1min/eth-min1/neural_data_LSTM/ETH_MACD_march2024_y.pt"
