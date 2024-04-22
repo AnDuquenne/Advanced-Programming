@@ -21,7 +21,7 @@ import torch
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import train_test_split
 
-from technical_analysis import StochasticRSI, MACD, DPO, RSI, CC
+from technical_analysis import *
 
 from torch.utils.data import Dataset, DataLoader
 
@@ -81,7 +81,9 @@ class DataCleaner:
 
             # Save the data
             data.to_csv(self.save_path + file, index=False)
-    def prepare_dataframe_FC(self, window, look_forward=1):
+
+    def prepare_dataframe_FC(self, window, look_forward=1, log_close=False, close_returns=False, only_close=False,
+                             min_max_scale=False):
 
         for file in tqdm(self.files):
             df = pd.read_csv(self.save_path + file)
@@ -89,6 +91,28 @@ class DataCleaner:
             df.set_index('date', inplace=True)
 
             df_numpy = dc(df).to_numpy()
+
+            if min_max_scale:
+                # Scale the data over columns
+                scaler = MinMaxScaler()
+                df_numpy = scaler.fit_transform(df_numpy)
+
+            if log_close:
+                # Transform the closing prices to log prices
+                df_numpy[:, 0] = np.log(df_numpy[:, 0])
+
+            if close_returns:
+                # Calculate the returns as being the ratio between the log prices
+                df_numpy[1:, 0] = df_numpy[1:, 0] / df_numpy[:-1, 0]
+                # Remove the first row
+                df_numpy = df_numpy[1:, :]
+                # Remove 1, to have a percentage change
+                df_numpy[:, 0] -= 1
+                df_numpy[:, 0] *= 100
+
+            if only_close:
+                df_numpy = df_numpy[:, 0].reshape(-1, 1)
+
 
             # Transpose the numpy array
             df_numpy = df_numpy.T
@@ -108,7 +132,6 @@ class DataCleaner:
             # Numpy windowed data is [nb of possible windows, nb of features, window size]
 
             # Create the torch tensors, for y we keep only the feature "Close"
-            # For the transformer layers we need (S, N, E)
             # S: sequence length, N: batch size, E: number of features (or embedding size)
             X_torch = torch.tensor(numpy_windowed_data[:, :, :(window - look_forward + 1)])
             y_torch = torch.tensor(numpy_windowed_data[:, 0, (window - look_forward + 1):]).unsqueeze(1)

@@ -31,7 +31,7 @@ from sklearn.model_selection import train_test_split
 
 from utils.utils import print_size, print_underlined, print_red, print_green, generate_square_subsequent_mask
 
-from data_handler import DataCleaner
+from utils.data_handler import DataCleaner
 
 # Load the configuration file
 with open('../io/config.yaml', 'r') as file:
@@ -462,3 +462,4 @@ if __name__ == '__main__':
     # trainer.train()
     trainer.evaluate(X_encoder_test[6000:7000, :, :], X_decoder_test[6000:7000, :, :], y_test[6000:7000, :, :])
 
+#
