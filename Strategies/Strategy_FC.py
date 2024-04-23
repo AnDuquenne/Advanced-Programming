@@ -42,12 +42,11 @@ class TimeSeriesDataframe(Dataset):
 
 
 class FC(nn.Module):
-    def __init__(self, input_size, hidden_size, num_layers, device, fc_out, dropout):
+    def __init__(self, input_size, hidden_size, device, fc_out, dropout):
         super(FC, self).__init__()
 
         self.input_size = input_size
         self.hidden_size = hidden_size
-        self.num_layers = num_layers
         self.device = device
         self.fc_out = fc_out
         self.dropout = dropout
@@ -90,7 +89,6 @@ if __name__ == '__main__':
     NB_EPOCHS = config['Strategy']['FC']['nb_epochs']
     INPUT_SIZE = config['Strategy']['FC']['input_size']
     HIDDEN_SIZE = config['Strategy']['FC']['hidden_size']
-    NUM_LAYERS = config['Strategy']['FC']['num_layers']
     DROPOUT = config['Strategy']['FC']['dropout']
 
     WINDOW = config['Strategy']['FC']['dh_params']['window']
@@ -147,7 +145,7 @@ if __name__ == '__main__':
     #                             Define the model                             #
     # ------------------------------------------------------------------------ #
 
-    model = FC(input_size=X.size(2), hidden_size=HIDDEN_SIZE, num_layers=NUM_LAYERS, fc_out=y_train.size(1),
+    model = FC(input_size=X.size(2), hidden_size=HIDDEN_SIZE, fc_out=y_train.size(1),
                dropout=DROPOUT, device=DEVICE).to(DEVICE)
 
     # ------------------------------------------------------------------------ #
@@ -167,7 +165,6 @@ if __name__ == '__main__':
                 with open(SAVE_PATH + folder + "/config.yaml", 'r') as file:
                     config_folder = yaml.safe_load(file)
                     if config_folder['Strategy']['FC']['hidden_size'] == HIDDEN_SIZE and \
-                            config_folder['Strategy']['FC']['num_layers'] == NUM_LAYERS and \
                             config_folder['Strategy']['FC']['dh_params']['window'] == WINDOW and \
                             config_folder['Strategy']['FC']['dh_params'][
                                 'look_forward'] == LOOK_FORWARD and \

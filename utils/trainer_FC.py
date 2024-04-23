@@ -176,3 +176,4 @@ class Trainer:
         plt.plot(preds.cpu().detach().numpy(), label="predictions")
         plt.legend()
         plt.show()
+

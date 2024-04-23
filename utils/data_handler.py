@@ -94,7 +94,7 @@ class DataCleaner:
 
             if min_max_scale:
                 # Scale the data over columns
-                scaler = MinMaxScaler()
+                scaler = MinMaxScaler(feature_range=(-1, 1))
                 df_numpy = scaler.fit_transform(df_numpy)
 
             if log_close:
@@ -112,7 +112,6 @@ class DataCleaner:
 
             if only_close:
                 df_numpy = df_numpy[:, 0].reshape(-1, 1)
-
 
             # Transpose the numpy array
             df_numpy = df_numpy.T
@@ -140,9 +139,8 @@ class DataCleaner:
             torch.save(X_torch, self.save_neural_path_fc + file.replace('.csv', '_X.pt'))
             torch.save(y_torch, self.save_neural_path_fc + file.replace('.csv', '_y.pt'))
 
-    def prepare_dataframe_LSTM(self, window, look_forward=1):
-
-        assert look_forward < window, "The look_forward parameter must be less than the window parameter."
+    def prepare_dataframe_LSTM(self, window, look_forward=1, log_close=False, close_returns=False, only_close=False,
+                             min_max_scale=False):
 
         for file in tqdm(self.files):
             df = pd.read_csv(self.save_path + file)
@@ -151,36 +149,47 @@ class DataCleaner:
 
             df_numpy = dc(df).to_numpy()
 
-            X_torch = torch.zeros(df_numpy.shape[0] - window, df_numpy.shape[1] * window)
-            for i in range(df_numpy.shape[1]):
-                for j in range(window):
-                    X_torch[:, (i * window) + j] = torch.tensor(df_numpy[j: -window + j, i])
+            if min_max_scale:
+                # Scale the data over columns
+                scaler = MinMaxScaler(feature_range=(-1, 1))
+                df_numpy = scaler.fit_transform(df_numpy)
 
-            y_torch = dc(X_torch[:, window - look_forward:window])
+            if log_close:
+                # Transform the closing prices to log prices
+                df_numpy[:, 0] = np.log(df_numpy[:, 0])
 
-            # Remove the last look_forward columns for the X_torch and the technical indicators
-            df_X = pd.DataFrame(X_torch.numpy())
-            df_y = pd.DataFrame(y_torch.numpy())
+            if close_returns:
+                # Calculate the returns as being the ratio between the log prices
+                df_numpy[1:, 0] = df_numpy[1:, 0] / df_numpy[:-1, 0]
+                # Remove the first row
+                df_numpy = df_numpy[1:, :]
+                # Remove 1, to have a percentage change
+                df_numpy[:, 0] -= 1
+                df_numpy[:, 0] *= 100
 
-            cols_to_drop = []
-            for i in range(df_numpy.shape[1]):
-                for j in range(look_forward):
-                    cols_to_drop.append((i * window) + (window - j) - 1)
+            if only_close:
+                df_numpy = df_numpy[:, 0].reshape(-1, 1)
 
-            print(cols_to_drop)
+            # Transpose the numpy array
+            df_numpy = df_numpy.T
 
-            # Create a boolean mask where True indicates the columns we want to keep
-            mask = torch.ones(X_torch.shape[1], dtype=torch.bool)  # Initially set all to True
-            mask[cols_to_drop] = False  # Set the columns we want to drop to False
+            ts_length = df_numpy.shape[1]
+            nb_features = df_numpy.shape[0]
 
-            # Drop the columns in torch_X
-            # Use the mask to select columns
-            X_torch = X_torch[:, mask]
+            # Create the numpy data array (nb of possible windows, n_features, window + look_forward)
+            # It contains the original data and the technical indicators
+            numpy_windowed_data = np.zeros((ts_length - (window + look_forward),
+                                            nb_features,
+                                            window + look_forward))
 
-            # Remove the last "look_forward" rows for the x_torch and y_torch
-            # (due to shift in dataset creation, the last "look_forward" rows are not valid)
-            X_torch = X_torch[:-look_forward]
-            y_torch = y_torch[:-look_forward]
+            for i in range(ts_length - (window + look_forward)):
+                numpy_windowed_data[i, :, :] = df_numpy[:, i:i + window + look_forward]
+
+            # Numpy windowed data is [nb of possible windows, nb of features, window size]
+
+            # Create the torch tensors, for y we keep only the feature "Close"
+            X_torch = torch.tensor(numpy_windowed_data[:, :, :(window - look_forward + 1)])
+            y_torch = torch.tensor(numpy_windowed_data[:, 0, (window - look_forward + 1):]).unsqueeze(1)
 
             # Save the data as torch tensors
             torch.save(X_torch, self.save_neural_path_LSTM + file.replace('.csv', '_X.pt'))
@@ -214,7 +223,7 @@ class DataCleaner:
 
             if min_max_scale:
                 # Scale the data over columns
-                scaler = MinMaxScaler()
+                scaler = MinMaxScaler(feature_range=(-1, 1))
                 df_numpy = scaler.fit_transform(df_numpy)
 
             if log_close:
