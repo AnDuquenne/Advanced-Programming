@@ -28,6 +28,10 @@ from utils.utils import *
 from utils.technical_analysis import MACD
 from utils.notifications import send_message
 
+from Strategies.SFStrategy import SFStrategy
+from Strategies.SFStrategy_I import SFStrategyI
+from Strategies.Strategy_FC import Strategy_FC
+from Strategies.Strategy_LSTM import Strategy_LSTM
 from Strategies.Strategy_MACD import StrategyMACD
 
 
@@ -129,6 +133,8 @@ class LiveTest():
         :return:
         """
 
+        waiting_time = 0
+
         notif_sent = False
         iter_log = 0
 
@@ -139,10 +145,14 @@ class LiveTest():
             history = self.get_historical_price(days=0, minutes=60, interval="5")
 
             if isinstance(self.strategy, StrategyMACD):
+                waiting_time = 0.5
+
+            if isinstance(self.strategy, StrategyMACD):
                 price = {
                     "price": price,
                     "history": history
                 }
+                waiting_time = 1
 
             t_string = f"{t.day}/{t.month}/{t.year}-{t.hour}:{t.minute}:{t.second}"
 

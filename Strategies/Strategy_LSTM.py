@@ -41,9 +41,9 @@ class TimeSeriesDataframe(Dataset):
         return self.X[idx], self.y[idx]
 
 
-class LSTMForecast(nn.Module):
+class Strategy_LSTM(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers, device, fc_out, dropout):
-        super(LSTMForecast, self).__init__()
+        super(Strategy_LSTM, self).__init__()
 
         self.input_size = input_size
         self.hidden_size = hidden_size
@@ -136,7 +136,7 @@ if __name__ == '__main__':
     #                             Define the model                             #
     # ------------------------------------------------------------------------ #
 
-    model = LSTMForecast(input_size=X.size(2), hidden_size=HIDDEN_SIZE, num_layers=NUM_LAYERS, fc_out=y_train.size(1),
+    model = Strategy_LSTM(input_size=X.size(2), hidden_size=HIDDEN_SIZE, num_layers=NUM_LAYERS, fc_out=y_train.size(1),
                dropout=DROPOUT, device=DEVICE).to(DEVICE)
 
     # ------------------------------------------------------------------------ #

@@ -41,9 +41,9 @@ class TimeSeriesDataframe(Dataset):
         return self.X[idx], self.y[idx]
 
 
-class FC(nn.Module):
+class Strategy_FC(nn.Module):
     def __init__(self, input_size, hidden_size, device, fc_out, dropout):
-        super(FC, self).__init__()
+        super(Strategy_FC, self).__init__()
 
         self.input_size = input_size
         self.hidden_size = hidden_size
@@ -70,6 +70,9 @@ class FC(nn.Module):
         out = self.fc_3(out)
 
         return out
+
+    def load_weights(self, path):
+        self.load_state_dict(torch.load(path))
 
 
 if __name__ == '__main__':
@@ -104,7 +107,7 @@ if __name__ == '__main__':
 
     DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
 
-    MODEL_NAME = f"LSTM_IS_{INPUT_SIZE}_HS_{HIDDEN_SIZE}_NL_{NUM_LAYERS}_DO_{DROPOUT}"
+    MODEL_NAME = f"FC_IS_{INPUT_SIZE}_HS_{HIDDEN_SIZE}_DO_{DROPOUT}"
 
     # ------------------------------------------------------------------------ #
     #                              Create the data                             #
@@ -145,7 +148,7 @@ if __name__ == '__main__':
     #                             Define the model                             #
     # ------------------------------------------------------------------------ #
 
-    model = FC(input_size=X.size(2), hidden_size=HIDDEN_SIZE, fc_out=y_train.size(1),
+    model = Strategy_FC(input_size=X.size(2), hidden_size=HIDDEN_SIZE, fc_out=y_train.size(1),
                dropout=DROPOUT, device=DEVICE).to(DEVICE)
 
     # ------------------------------------------------------------------------ #
