@@ -31,6 +31,8 @@ if __name__ == "__main__":
 
     data = pd.read_csv("../" + cfg["back_test"]["main"]["data_path"])
 
+    assert strat_ in ["SFStrategyI", "SFStrategy"], "Invalid strategy name"
+
     # Transform the date column to datetime
     data['date'] = pd.to_datetime(data['date'], format='%Y-%m-%d %H:%M:%S')
 
@@ -41,8 +43,6 @@ if __name__ == "__main__":
         strategy = SFStrategyI(run_name=run_name, buy_percentage=buy_percentage_)
     elif strat_ == "SFStrategy":
         strategy = SFStrategy(run_name=run_name, buy_percentage=buy_percentage_)
-    elif strat_ == "StrategyMACD":
-        strategy = StrategyMACD(run_name=run_name, buy_percentage=buy_percentage_)
 
     # Create the live test object
     back_test = BackTest(data, strategy, wallet)

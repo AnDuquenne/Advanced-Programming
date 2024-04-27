@@ -35,30 +35,16 @@ from utils.technical_analysis import MACD
 
 class StrategyMACD:
 
-    def __init__(self, run_name, data_path=None, buy_percentage=0.01, exposure=2):
+    def __init__(self, run_name, buy_percentage=0.01, exposure=2):
         """
         Initialize the strategy
 
         :param run_name: Name of the run
-        :param data_path: Path to the data for the backtest
         :param buy_percentage: The percentage range to create the orders
         ex. if buy_percentage = 0.01, the orders will be created at 1% intervals (200, 198, ...)
         :param exposure: Wallet exposure to the orders
         ex. if exposure = 0.5, 50% of the wallet is open to create the order book
         """
-        # For back testing
-        if data_path is not None:
-            self.data_path = data_path
-            self.df = pd.read_csv(data_path)
-
-            self.opening_time = self.df['date'].values[0]
-            self.opening_price = self.df['close'].values[0]
-            self.closing_time = self.df['date'].values[-1]
-            self.closing_price = self.df['close'].values[-1]
-            self.positions = []
-            self.orders = []
-
-            self.wallet = 10000
 
         self.run_name = run_name
         self.buy_percentage = buy_percentage

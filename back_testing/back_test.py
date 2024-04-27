@@ -55,6 +55,7 @@ class BackTest:
 
         # For each time step check if orders should be executed or if positions should be closed
         for i in tqdm(range(1, time_sequence_length)):
+
             self.orders, self.positions, self.wallet = self.strategy.check_conditions(
                 self.orders, self.positions, self.df['close'][i], self.df['date'][i], self.wallet
             )
@@ -96,7 +97,7 @@ class BackTest:
 
         # Save the results in a csv file
         fields = results[0].keys()
-        with open('../io/back_test/SFStrategy/' + self.strategy.__str__() + '.csv', 'w', newline="") as f:
+        with open('../io/back_test/strategies_time_evolution/' + self.strategy.__str__() + '.csv', 'w', newline="") as f:
             write = csv.DictWriter(f, fieldnames=fields)
             write.writeheader()
             write.writerows(results)

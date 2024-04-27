@@ -16,8 +16,8 @@ data_path:
 
 back_test:
   main:
-    strategy: "SFStrategy"
-    buy_percentage: 0.005
+    strategy: "SFStrategyI"
+    buy_percentage: 0.01
     wallet: 1000
     data_path: "Data/crypto-1min/btc-min1/cleaned_data/BTC_MACD_december2023.csv"
 
