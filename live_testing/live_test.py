@@ -200,7 +200,7 @@ class LiveTest():
                 print("       Open: ", pnl_open)
                 print("       Total: ", pnl_closed + pnl_open)
 
-            # Toral value of positions
+            # Total value of positions
             tot_ = 0
             for pos_ in self.positions:
                 if pos_.status == 'open':

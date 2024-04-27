@@ -14,6 +14,13 @@ data_path:
       neural_LSTM: "../Data/crypto-1min/eth-min1/neural_data_LSTM/"
       neural_transformers: "../Data/crypto-1min/eth-min1/neural_data_transformers/"
 
+back_test:
+  main:
+    strategy: "SFStrategy"
+    buy_percentage: 0.005
+    wallet: 1000
+    data_path: "Data/crypto-1min/btc-min1/cleaned_data/BTC_MACD_december2023.csv"
+
 Strategy:
   FC:
     data_path_X: "Data/crypto-1min/btc-min1/neural_data_FC/BTC-2021min_X.pt"
