@@ -27,7 +27,9 @@ async def send_telegram_message(title, message):
     pass
 
 
-def send_message(title, message):
+def send_message(title, message, send=True):
+    if not send:
+        return
     try:
         asyncio.get_event_loop().run_until_complete(send_telegram_message(title, message))
     except:
