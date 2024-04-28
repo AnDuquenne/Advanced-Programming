@@ -34,22 +34,21 @@ env = os.getenv("environment")
 
 class SFStrategy:
 
-    def __init__(self, run_name, data_path=None, buy_percentage=0.01, exposure=2, indicators=None):
+    def __init__(self, run_name, buy_percentage=0.01, exposure=2, debug=True):
         """
         Initialize the strategy
 
         :param run_name: Name of the run
-        :param data_path: Path to the data for the backtest
         :param buy_percentage: The percentage range to create the orders
         ex. if buy_percentage = 0.01, the orders will be created at 1% intervals (200, 198, ...)
         :param exposure: Wallet exposure to the orders
-        :param indicators: The indicators to use for the strategy
         ex. if exposure = 0.5, 50% of the wallet is open to create the order book
         """
 
         self.run_name = run_name
         self.buy_percentage = buy_percentage
         self.exposure = exposure  # x % of the wallet is open to create orders
+        self.debug = debug
 
     def check_conditions(self, orders, positions, data, time, wallet):
         """
@@ -77,7 +76,8 @@ class SFStrategy:
         # Create 100 orders
         if len(order_list) == 0 and len(position_list) == 0:
             for value in [data * (1 - (i * self.buy_percentage)) for i in range(1, 100)]:
-                print(f"Creating order at {value}")
+                if self.debug:
+                    print(f"Creating order at {value}")
 
                 order_list.append(Order(
                     time=time,
@@ -91,42 +91,43 @@ class SFStrategy:
             if order.direction == 'long' and data <= order.price:
                 if wallet >= order.amount:
 
-                    # Print, notification and log the order
-                    print_green(emoji.emojize(":green_circle:") + t_string + f"Order condition met at {data}")
-                    print_green(f"\t Position size: {order.amount} at {data}")
-                    print_green(f"\t Position value: {order.amount * data}")
-                    send_message(
-                        emoji.emojize(":green_circle:") +
-                        f"Order condition met at {round(data, 3)}\n",
-                        f"Position size: {round(order.amount, 3)} at {round(data, 3)}\n"
-                        f"Position value: {round(order.amount * data, 3)}\n"
-                        f"Wallet: {round(wallet, 5)}",
-                    )
-                    if env == "server":
-                        # Check if file exists
-                        if not os.path.exists('io/live_test/log/live_test_log_' + self.run_name + '.csv'):
-                            subprocess.run(
-                                ["touch", 'io/live_test/log/live_test_log_' + self.run_name + '.csv'])
-                            with open('io/live_test/log/live_test_log_' + self.run_name + '.csv',
-                                      'w') as file:
-                                file.write("time,"
-                                           "event,"
-                                           "event_price,"
-                                           "position_size,"
-                                           "position_value,"
-                                           "wallet,"
-                                           "infos"
-                                           "\n")
-                        # Log the order
-                        with open('io/live_test/log/live_test_log_' + self.run_name + '.csv', 'a') as file:
-                            file.write(t_string + ",")
-                            file.write(f"LONG ORDER,")
-                            file.write(f"{round(data, 3)},")
-                            file.write(f"{round(order.amount, 3)},")
-                            file.write(f"{round(order.amount * data, 3)},")
-                            file.write(f"{round(wallet, 5)},")
-                            file.write(f"LONG Order condition met at {round(data, 3)}")
-                            file.write(f" -- From order created at {order.time}\n")
+                    if self.debug:
+                        # Print, notification and log the order
+                        print_green(emoji.emojize(":green_circle:") + t_string + f"Order condition met at {data}")
+                        print_green(f"\t Position size: {order.amount} at {data}")
+                        print_green(f"\t Position value: {order.amount * data}")
+                        send_message(
+                            emoji.emojize(":green_circle:") +
+                            f"Order condition met at {round(data, 3)}\n",
+                            f"Position size: {round(order.amount, 3)} at {round(data, 3)}\n"
+                            f"Position value: {round(order.amount * data, 3)}\n"
+                            f"Wallet: {round(wallet, 5)}",
+                        )
+                        if env == "server":
+                            # Check if file exists
+                            if not os.path.exists('io/live_test/log/live_test_log_' + self.run_name + '.csv'):
+                                subprocess.run(
+                                    ["touch", 'io/live_test/log/live_test_log_' + self.run_name + '.csv'])
+                                with open('io/live_test/log/live_test_log_' + self.run_name + '.csv',
+                                          'w') as file:
+                                    file.write("time,"
+                                               "event,"
+                                               "event_price,"
+                                               "position_size,"
+                                               "position_value,"
+                                               "wallet,"
+                                               "infos"
+                                               "\n")
+                            # Log the order
+                            with open('io/live_test/log/live_test_log_' + self.run_name + '.csv', 'a') as file:
+                                file.write(t_string + ",")
+                                file.write(f"LONG ORDER,")
+                                file.write(f"{round(data, 3)},")
+                                file.write(f"{round(order.amount, 3)},")
+                                file.write(f"{round(order.amount * data, 3)},")
+                                file.write(f"{round(wallet, 5)},")
+                                file.write(f"LONG Order condition met at {round(data, 3)}")
+                                file.write(f" -- From order created at {order.time}\n")
 
                     # Create a new position
                     p = Position(
@@ -153,40 +154,41 @@ class SFStrategy:
             # Case 1: The position is a long position and the index price is above the closing price -> close the pos
             if position.direction == 'long' and data >= position.closing_price and position.status == 'open':
 
-                print_red(emoji.emojize(":red_circle:") + t_string + f"Position closing condition met at {data}")
-                print_red(f"\t Position size: {position.amount} at {data}")
-                print_red(f"\t Position value: {position.amount * data}")
-                send_message(
-                    emoji.emojize(":red_circle:") +
-                    f"Position closing condition met at {round(data, 3)}\n",
-                    f"Position size: {round(position.amount, 3)} at {round(data, 3)}\n"
-                    f"Position value: {round(position.amount * data, 3)}\n"
-                    f"Wallet: {round(wallet, 5)}",
-                )
-                if env == "server":
-                    # Check if file exists
-                    if not os.path.exists('io/live_test/log/live_test_log_' + self.run_name + '.csv'):
-                        subprocess.run(["touch", 'io/live_test/log/live_test_log_' + self.run_name + '.csv'])
-                        with open('io/live_test/log/live_test_log_' + self.run_name + '.csv', 'w') as file:
-                            file.write("time,"
-                                       "event,"
-                                       "event_price,"
-                                       "position_size,"
-                                       "position_value,"
-                                       "wallet,"
-                                       "infos"
-                                       "\n")
-                    # Log the order
-                    with open('io/live_test/log/live_test_log_' + self.run_name + '.csv',
-                              'a') as file:
-                        file.write(t_string + ",")
-                        file.write(f"LONG POSITION,")
-                        file.write(f"{round(data, 3)},")
-                        file.write(f"{round(position.amount, 3)},")
-                        file.write(f"{round(position.amount * data, 3)},")
-                        file.write(f"{round(wallet, 5)},")
-                        file.write(f"LONG Position condition met at {round(data, 3)}")
-                        file.write(f" -- From order created at {position.opening_time}\n")
+                if self.debug:
+                    print_red(emoji.emojize(":red_circle:") + t_string + f"Position closing condition met at {data}")
+                    print_red(f"\t Position size: {position.amount} at {data}")
+                    print_red(f"\t Position value: {position.amount * data}")
+                    send_message(
+                        emoji.emojize(":red_circle:") +
+                        f"Position closing condition met at {round(data, 3)}\n",
+                        f"Position size: {round(position.amount, 3)} at {round(data, 3)}\n"
+                        f"Position value: {round(position.amount * data, 3)}\n"
+                        f"Wallet: {round(wallet, 5)}",
+                    )
+                    if env == "server":
+                        # Check if file exists
+                        if not os.path.exists('io/live_test/log/live_test_log_' + self.run_name + '.csv'):
+                            subprocess.run(["touch", 'io/live_test/log/live_test_log_' + self.run_name + '.csv'])
+                            with open('io/live_test/log/live_test_log_' + self.run_name + '.csv', 'w') as file:
+                                file.write("time,"
+                                           "event,"
+                                           "event_price,"
+                                           "position_size,"
+                                           "position_value,"
+                                           "wallet,"
+                                           "infos"
+                                           "\n")
+                        # Log the order
+                        with open('io/live_test/log/live_test_log_' + self.run_name + '.csv',
+                                  'a') as file:
+                            file.write(t_string + ",")
+                            file.write(f"LONG POSITION,")
+                            file.write(f"{round(data, 3)},")
+                            file.write(f"{round(position.amount, 3)},")
+                            file.write(f"{round(position.amount * data, 3)},")
+                            file.write(f"{round(wallet, 5)},")
+                            file.write(f"LONG Position condition met at {round(data, 3)}")
+                            file.write(f" -- From order created at {position.opening_time}\n")
 
                 position.close(data, time)
                 dollars_value += position.dollars_value(data)

@@ -5,6 +5,7 @@ from Strategies.Strategy_MACD import StrategyMACD
 
 import argparse
 import pandas as pd
+from tqdm import tqdm
 
 import datetime
 import yaml
@@ -29,23 +30,26 @@ if __name__ == "__main__":
     buy_percentage_ = cfg["back_test"]["main"]["buy_percentage"]
     wallet = cfg["back_test"]["main"]["wallet"]
 
-    data = pd.read_csv("../" + cfg["back_test"]["main"]["data_path"])
+    data_files = cfg["back_test"]["main"]["data_files"]
 
     assert strat_ in ["SFStrategyI", "SFStrategy"], "Invalid strategy name"
 
-    # Transform the date column to datetime
-    data['date'] = pd.to_datetime(data['date'], format='%Y-%m-%d %H:%M:%S')
+    for file in tqdm(data_files):
+        data = pd.read_csv("../" + file)
+        # Transform the date column to datetime
 
-    run_name = datetime.datetime.now().strftime("%d-%m-%Y-%H-%M-%S") + strat_ + "__" + str(buy_percentage_)
+        data['date'] = pd.to_datetime(data['date'], format='%Y-%m-%d %H:%M:%S')
 
-    strategy = None
-    if strat_ == "SFStrategyI":
-        strategy = SFStrategyI(run_name=run_name, buy_percentage=buy_percentage_)
-    elif strat_ == "SFStrategy":
-        strategy = SFStrategy(run_name=run_name, buy_percentage=buy_percentage_)
+        run_name = datetime.datetime.now().strftime("%d-%m-%Y-%H-%M-%S") + strat_ + "__" + str(buy_percentage_)
 
-    # Create the live test object
-    back_test = BackTest(data, strategy, wallet)
+        strategy = None
+        if strat_ == "SFStrategyI":
+            strategy = SFStrategyI(run_name=run_name, buy_percentage=buy_percentage_, debug=False)
+        elif strat_ == "SFStrategy":
+            strategy = SFStrategy(run_name=run_name, buy_percentage=buy_percentage_, debug=False)
 
-    # Run the live test
-    back_test.run()
+        # Create the live test object
+        back_test = BackTest(data, strategy, wallet)
+
+        # Run the live test
+        back_test.run()

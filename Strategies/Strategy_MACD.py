@@ -35,7 +35,7 @@ from utils.technical_analysis import MACD
 
 class StrategyMACD:
 
-    def __init__(self, run_name, buy_percentage=0.01, exposure=2):
+    def __init__(self, run_name, buy_percentage=0.01, exposure=2, debug=True):
         """
         Initialize the strategy
 
@@ -51,6 +51,7 @@ class StrategyMACD:
         self.exposure = exposure  # x % of the wallet is open to create orders
 
         self.last_macd_hist_value = None
+        self.debug = debug
 
     def get_macd_histogram(self, history):
         """
@@ -120,55 +121,16 @@ class StrategyMACD:
             # Reset the last MACD histogram value
             self.last_macd_hist_value = history[-2]
 
-            # Print, notification and log the order
-            print_green(emoji.emojize(":green_circle:") + t_string + f"Position opening condition met at {data}")
-            print_green(f"\t Position size: {am_} at {data}")
-            print_green(f"\t Position value: {am_ * data}")
-            send_message(
-                emoji.emojize(":green_circle:") +
-                f"Order condition met at {round(data, 3)}\n",
-                f"Position size: {round(am_, 3)} at {round(data, 3)}\n"
-                f"Position value: {round(am_ * data, 3)}\n"
-                f"Wallet: {round(wallet, 5)}",
-            )
-            if env == "server":
-                # Check if file exists
-                if not os.path.exists('io/live_test/log/live_test_log_' + self.run_name + '.csv'):
-                    subprocess.run(
-                        ["touch", 'io/live_test/log/live_test_log_' + self.run_name + '.csv'])
-                    with open('io/live_test/log/live_test_log_' + self.run_name + '.csv',
-                              'w') as file:
-                        file.write("time,"
-                                   "event,"
-                                   "event_price,"
-                                   "position_size,"
-                                   "position_value,"
-                                   "wallet,"
-                                   "infos"
-                                   "\n")
-                # Log the order
-                with open('io/live_test/log/live_test_log_' + self.run_name + '.csv', 'a') as file:
-                    file.write(t_string + ",")
-                    file.write(f"LONG ORDER,")
-                    file.write(f"{round(data, 3)},")
-                    file.write(f"{round(am_, 3)},")
-                    file.write(f"{round(am_ * data, 3)},")
-                    file.write(f"{round(wallet, 5)},")
-                    file.write(f"Open position met\n")
-
-        # Check positions
-        for position in position_list:
-            # Case 1: The position is a long position and the index price is above the closing price -> close the pos
-            if position.direction == 'long' and data >= position.closing_price and position.status == 'open':
-
-                print_red(emoji.emojize(":red_circle:") + t_string + f"Position closing condition met at {data}")
-                print_red(f"\t Position size: {position.amount} at {data}")
-                print_red(f"\t Position value: {position.amount * data}")
+            if self.debug:
+                # Print, notification and log the order
+                print_green(emoji.emojize(":green_circle:") + t_string + f"Position opening condition met at {data}")
+                print_green(f"\t Position size: {am_} at {data}")
+                print_green(f"\t Position value: {am_ * data}")
                 send_message(
-                    emoji.emojize(":red_circle:") +
-                    f"Position closing condition met at {round(data, 3)}\n",
-                    f"Position size: {round(position.amount, 3)} at {round(data, 3)}\n"
-                    f"Position value: {round(position.amount * data, 3)}\n"
+                    emoji.emojize(":green_circle:") +
+                    f"Order condition met at {round(data, 3)}\n",
+                    f"Position size: {round(am_, 3)} at {round(data, 3)}\n"
+                    f"Position value: {round(am_ * data, 3)}\n"
                     f"Wallet: {round(wallet, 5)}",
                 )
                 if env == "server":
@@ -187,16 +149,57 @@ class StrategyMACD:
                                        "infos"
                                        "\n")
                     # Log the order
-                    with open('io/live_test/log/live_test_log_' + self.run_name + '.csv',
-                              'a') as file:
+                    with open('io/live_test/log/live_test_log_' + self.run_name + '.csv', 'a') as file:
                         file.write(t_string + ",")
-                        file.write(f"LONG POSITION,")
+                        file.write(f"LONG ORDER,")
                         file.write(f"{round(data, 3)},")
-                        file.write(f"{round(position.amount, 3)},")
-                        file.write(f"{round(position.amount * data, 3)},")
+                        file.write(f"{round(am_, 3)},")
+                        file.write(f"{round(am_ * data, 3)},")
                         file.write(f"{round(wallet, 5)},")
-                        file.write(f"LONG Position condition met at {round(data, 3)}")
-                        file.write(f" -- From order created at {position.opening_time}\n")
+                        file.write(f"Open position met\n")
+
+        # Check positions
+        for position in position_list:
+            # Case 1: The position is a long position and the index price is above the closing price -> close the pos
+            if position.direction == 'long' and data >= position.closing_price and position.status == 'open':
+
+                if self.debug:
+                    print_red(emoji.emojize(":red_circle:") + t_string + f"Position closing condition met at {data}")
+                    print_red(f"\t Position size: {position.amount} at {data}")
+                    print_red(f"\t Position value: {position.amount * data}")
+                    send_message(
+                        emoji.emojize(":red_circle:") +
+                        f"Position closing condition met at {round(data, 3)}\n",
+                        f"Position size: {round(position.amount, 3)} at {round(data, 3)}\n"
+                        f"Position value: {round(position.amount * data, 3)}\n"
+                        f"Wallet: {round(wallet, 5)}",
+                    )
+                    if env == "server":
+                        # Check if file exists
+                        if not os.path.exists('io/live_test/log/live_test_log_' + self.run_name + '.csv'):
+                            subprocess.run(
+                                ["touch", 'io/live_test/log/live_test_log_' + self.run_name + '.csv'])
+                            with open('io/live_test/log/live_test_log_' + self.run_name + '.csv',
+                                      'w') as file:
+                                file.write("time,"
+                                           "event,"
+                                           "event_price,"
+                                           "position_size,"
+                                           "position_value,"
+                                           "wallet,"
+                                           "infos"
+                                           "\n")
+                        # Log the order
+                        with open('io/live_test/log/live_test_log_' + self.run_name + '.csv',
+                                  'a') as file:
+                            file.write(t_string + ",")
+                            file.write(f"LONG POSITION,")
+                            file.write(f"{round(data, 3)},")
+                            file.write(f"{round(position.amount, 3)},")
+                            file.write(f"{round(position.amount * data, 3)},")
+                            file.write(f"{round(wallet, 5)},")
+                            file.write(f"LONG Position condition met at {round(data, 3)}")
+                            file.write(f" -- From order created at {position.opening_time}\n")
 
                 position.close(data, time)
                 dollars_value += position.dollars_value(data)

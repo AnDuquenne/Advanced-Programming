@@ -54,7 +54,7 @@ class BackTest:
         results = []
 
         # For each time step check if orders should be executed or if positions should be closed
-        for i in tqdm(range(1, time_sequence_length)):
+        for i in range(1, time_sequence_length):
 
             self.orders, self.positions, self.wallet = self.strategy.check_conditions(
                 self.orders, self.positions, self.df['close'][i], self.df['date'][i], self.wallet

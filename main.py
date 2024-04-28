@@ -1,24 +1,14 @@
 from Strategies.SFStrategy import SFStrategy
 from Strategies.SFStrategy_I import SFStrategyI
 
+import pandas as pd
+import os
+from tqdm import tqdm
+from utils.data_handler import DataCleaner
 if __name__ == "__main__":
-    files = ["Data/crypto-1min/btc-min1/BTC_MACD_december2023.csv",
-             "Data/crypto-1min/btc-min1/BTC_MACD_January2024.csv",
-             "Data/crypto-1min/btc-min1/BTC_MACD_february2024.csv",
-             "Data/crypto-1min/btc-min1/BTC_MACD_march2024.csv",
-             "Data/crypto-1min/eth-min1/ETH_MACD_december2023.csv",
-             "Data/crypto-1min/eth-min1/ETH_MACD_January2024.csv",
-             "Data/crypto-1min/eth-min1/ETH_MACD_february2024.csv",
-             "Data/crypto-1min/eth-min1/ETH_MACD_march2024.csv"
-             ]
 
-    # for file in files:
-    #     s = SFStrategy(file)
-    #     s.run()
-    #
-    #     s = SFStrategyI(file)
-    #     s.run()
+    # create a list of files that contain 2018 or 2019 or 2020 or 2021 or 2022 in their name
+    files = [f for f in os.listdir("Data/crypto-1min/eth-min1/cleaned_data")]
 
-    s = SFStrategy(files[5])
-    s.run()
-    s.show_simulation()
+    for file in files:
+        print("'Data/crypto-1min/eth-min1/cleaned_data/" + file + "',")
