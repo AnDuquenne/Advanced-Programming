@@ -2,10 +2,16 @@ from live_test import LiveTest
 from Strategies.SFStrategy import SFStrategy
 from Strategies.SFStrategy_I import SFStrategyI
 from Strategies.Strategy_MACD import StrategyMACD
+from Strategies.Strategy_FC import StrategyFC
 
 import argparse
 
 import datetime
+import yaml
+
+# Load the configuration file
+with open("../io/config.yaml", "r") as ymlfile:
+    cfg = yaml.load(ymlfile, Loader=yaml.FullLoader)
 
 
 if __name__ == "__main__":
@@ -29,6 +35,17 @@ if __name__ == "__main__":
         strategy = SFStrategy(run_name=run_name, buy_percentage=buy_percentage_)
     elif strat_ == "StrategyMACD":
         strategy = StrategyMACD(run_name=run_name, buy_percentage=buy_percentage_)
+    elif strat_ == "StrategyFC":
+        network_params = {
+            "input_size": cfg["live_test"]["main"]["fc"]["window"],
+            "hidden_size": cfg["live_test"]["main"]["fc"]["hidden_size"],
+            "dropout": cfg["live_test"]["main"]["fc"]["dropout"],
+            "device": cfg["live_test"]["main"]["fc"]["device"],
+            "weights_path": cfg["live_test"]["main"]["fc"]["weights_path"],
+        }
+
+        strategy = StrategyFC(run_name=run_name, network_params=network_params, buy_percentage=buy_percentage_,
+                              debug=False)
 
     # Create the live test object
     live_test = LiveTest("eth_usd", strategy, wallet)

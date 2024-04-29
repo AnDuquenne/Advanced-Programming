@@ -14,6 +14,18 @@ data_path:
       neural_LSTM: "../Data/crypto-1min/eth-min1/neural_data_LSTM/"
       neural_transformers: "../Data/crypto-1min/eth-min1/neural_data_transformers/"
 
+live_test:
+  main:
+    strategy: "StrategyFC"
+    fc:
+      window: 10
+      hidden_size: 100
+      dropout: 0.2
+      device: "cpu"
+      weights_path: "../io/FC/2024-04-29_14-50-50/weights/weights.pt"
+    buy_percentage: 0.01
+    wallet: 1000
+
 back_test:
   main:
     strategy: "StrategyFC"

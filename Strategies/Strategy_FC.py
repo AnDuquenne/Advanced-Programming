@@ -135,7 +135,7 @@ class StrategyFC:
 
         self.forecaster.load_weights(weights_path)
 
-    def check_conditions(self, orders, positions, data, time, wallet, forward):
+    def check_conditions(self, orders, positions, data, time, wallet, forward=5):
         """
         Central part of the strategy class. It takes as input the list of positions and orders and the data.
         The data is composed of the prices of the index as well as what the strategy needs to make a decision.

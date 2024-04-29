@@ -30,7 +30,7 @@ from utils.notifications import send_message
 
 from Strategies.SFStrategy import SFStrategy
 from Strategies.SFStrategy_I import SFStrategyI
-from Strategies.Strategy_FC import Strategy_FC
+from Strategies.Strategy_FC import StrategyFC
 from Strategies.Strategy_LSTM import Strategy_LSTM
 from Strategies.Strategy_MACD import StrategyMACD
 
@@ -142,17 +142,19 @@ class LiveTest():
         while True:
 
             price, t = self.get_price()
-            history = self.get_historical_price(days=0, minutes=60, interval="5")
 
             if isinstance(self.strategy, StrategyMACD):
-                waiting_time = 0.5
-
-            if isinstance(self.strategy, StrategyMACD):
+                history = self.get_historical_price(days=0, minutes=60, interval="5")
                 price = {
                     "price": price,
                     "history": history
                 }
                 waiting_time = 1
+            elif isinstance(self.strategy, StrategyFC):
+                price = self.get_historical_price(days=0, minutes=10, interval="1")
+                waiting_time = 59
+            else:
+                waiting_time = 0.5
 
             t_string = f"{t.day}/{t.month}/{t.year}-{t.hour}:{t.minute}:{t.second}"
 
@@ -253,6 +255,6 @@ class LiveTest():
                                 f"{tot_ + self.wallet}\n")
 
             if env == "local":
-                time.sleep(5)
+                time.sleep(5 + waiting_time)
             else:
-                time.sleep(0.5)
+                time.sleep(waiting_time)
