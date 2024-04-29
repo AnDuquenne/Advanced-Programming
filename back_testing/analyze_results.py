@@ -14,31 +14,42 @@ sys.path.append(parent_dir)
 
 from utils.utils import *
 
+strategy = "SFStrategy"
+
 # Recover all files in the directory io/back_test/
-files = os.listdir("../io/back_test/strategies_time_evolution/")
+files = os.listdir(f"../io/back_test/strategies_time_evolution/{strategy}/")
 # Dataframe to store the results
 results = pd.DataFrame()
 
 for file in files:
-    results[file] = pd.read_csv("../io/back_test/strategies_time_evolution/" + file)["total_value"]
+    results[file] = pd.read_csv(f"../io/back_test/strategies_time_evolution/{strategy}/" + file)["total_value"]
 
 results["mean"] = results.mean(axis=1)
 results["std"] = results.std(axis=1)
-# plot the mean and the std
-results["mean"].plot()
+
+# Create a figure with a specific size
+plt.figure(figsize=(8, 5))
+plt.plot(results["mean"], label="Mean")
 plt.fill_between(results.index, results["mean"] - results["std"], results["mean"] + results["std"], alpha=0.2)
-plt.title("Mean of the back test results")
-plt.xlabel("Time")
-plt.ylabel("Total value")
+plt.title("Back test results")
+plt.xlabel("Time (minutes)")
+plt.ylabel("Total value (USD)")
+plt.legend()
+plt.grid()
+# Save the figure
+plt.savefig(f"../io/back_test/fig/total_value_mean_std_{strategy}.pdf")
+
+# plot the mean and the std
+plt.figure(figsize=(8, 5))
+# Plot all columns but the mean and the std, with reduced sickness
+for col in results.columns:
+    if col not in ["mean", "std"]:
+        plt.plot(results[col], linewidth=0.35)
+plt.title("Back test results")
+plt.xlabel("Time (minutes)")
+plt.ylabel("Total value (USD)")
 # add grid
 plt.grid()
-plt.show()
+# Save the figure
+plt.savefig(f"../io/back_test/fig/total_value_all_{strategy}.pdf")
 
-# Plot the results but the
-results.plot()
-# Remove legend
-plt.legend().remove()
-plt.title("Back test results")
-plt.xlabel("Time")
-plt.ylabel("Total value")
-plt.show()

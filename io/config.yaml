@@ -17,7 +17,7 @@ data_path:
 back_test:
   main:
     strategy: "SFStrategy"
-    buy_percentage: 0.01
+    buy_percentage: 0.05
     wallet: 1000
     data_files: ['Data/crypto-1min/btc-min1/cleaned_data/BTC_april2018.csv',
                 'Data/crypto-1min/btc-min1/cleaned_data/BTC_april2019.csv',
@@ -72,8 +72,6 @@ back_test:
                 'Data/crypto-1min/btc-min1/cleaned_data/BTC_september2019.csv',
                 'Data/crypto-1min/btc-min1/cleaned_data/BTC_september2020.csv',
                 'Data/crypto-1min/btc-min1/cleaned_data/BTC_september2021.csv']
-  analyze:
-    strategy: "SFStrategy"
 
 Strategy:
   FC:

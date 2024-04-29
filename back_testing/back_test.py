@@ -97,7 +97,13 @@ class BackTest:
 
         # Save the results in a csv file
         fields = results[0].keys()
-        with open('../io/back_test/strategies_time_evolution/' + self.strategy.__str__() + '.csv', 'w', newline="") as f:
-            write = csv.DictWriter(f, fieldnames=fields)
-            write.writeheader()
-            write.writerows(results)
+        if isinstance(self.strategy, SFStrategyI):
+            with open('../io/back_test/strategies_time_evolution/SFStrategyI/' + self.strategy.__str__() + '.csv', 'w', newline="") as f:
+                write = csv.DictWriter(f, fieldnames=fields)
+                write.writeheader()
+                write.writerows(results)
+        elif isinstance(self.strategy, SFStrategy):
+            with open('../io/back_test/strategies_time_evolution/SFStrategy/' + self.strategy.__str__() + '.csv', 'w', newline="") as f:
+                write = csv.DictWriter(f, fieldnames=fields)
+                write.writeheader()
+                write.writerows(results)
