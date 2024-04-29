@@ -162,7 +162,7 @@ class StrategyFC:
 
         assert len(data) == 10, "The data should contain 10 historical values"
         assert isinstance(data, pd.Series), "The data should be a pandas Series"
-        assert isinstance(wallet, float), f"The wallet should be a float, instead is: {wallet}"
+        assert isinstance(wallet, float), f"The wallet should be a float, instead is: {type(wallet)}"
 
         order_list = orders
         position_list = positions
