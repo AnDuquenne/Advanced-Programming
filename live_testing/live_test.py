@@ -306,7 +306,6 @@ class LiveTest():
                     msg += f"Total value of positions: {tot_}\n"
                     msg += f"Total value of the wallet (pos+wallet): {tot_ + self.wallet}\n"
                     send_message(title, msg)
-                    notif_sent = True
                     iter_log += 1
 
                     if env == "server":
