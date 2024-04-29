@@ -23,6 +23,13 @@ from utils.utils import *
 from utils.trainer_LSTM import Trainer
 from utils.market import *
 
+# Load environment variables
+import os
+import sys
+from dotenv import load_dotenv
+
+env = os.getenv("environment")
+
 
 class TimeSeriesDataframe(Dataset):
     """
@@ -88,7 +95,10 @@ class NetworkLSTM(nn.Module):
         return pred_ts[-forward:]
 
     def load_weights(self, path):
-        self.load_state_dict(torch.load(path))
+        if env == 'local':
+            self.load_state_dict(torch.load(path))
+        else:
+            self.load_state_dict(torch.load(path, map_location=self.device))
 
 class StrategyLSTM:
     def __init__(self, run_name, network_params, buy_percentage=0.01, exposure=2, debug=True):

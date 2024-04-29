@@ -23,6 +23,13 @@ from utils.utils import *
 from utils.trainer_FC import Trainer
 from utils.market import *
 
+# Load environment variables
+import os
+import sys
+from dotenv import load_dotenv
+
+env = os.getenv("environment")
+
 
 class TimeSeriesDataframe(Dataset):
     """
@@ -78,7 +85,10 @@ class NetworkFC(nn.Module):
         return out
 
     def load_weights(self, path):
-        self.load_state_dict(torch.load(path))
+        if env == 'local':
+            self.load_state_dict(torch.load(path))
+        else:
+            self.load_state_dict(torch.load(path, map_location=self.device))
 
     def predict(self, ts, forward):
         """
