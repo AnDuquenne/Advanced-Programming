@@ -3,6 +3,7 @@ from Strategies.SFStrategy import SFStrategy
 from Strategies.SFStrategy_I import SFStrategyI
 from Strategies.Strategy_MACD import StrategyMACD
 from Strategies.Strategy_FC import StrategyFC
+from Strategies.Strategy_LSTM import StrategyLSTM
 
 import argparse
 
@@ -43,12 +44,22 @@ if __name__ == "__main__":
             "device": cfg["live_test"]["main"]["fc"]["device"],
             "weights_path": cfg["live_test"]["main"]["fc"]["weights_path"],
         }
-
         strategy = StrategyFC(run_name=run_name, network_params=network_params, buy_percentage=buy_percentage_,
                               debug=False)
+    elif strat_ == "StrategyLSTM":
+        network_params = {
+            "input_size": cfg["live_test"]["main"]["lstm"]["window"],
+            "hidden_size": cfg["live_test"]["main"]["lstm"]["hidden_size"],
+            "num_layers": cfg["live_test"]["main"]["lstm"]["num_layers"],
+            "dropout": cfg["live_test"]["main"]["lstm"]["dropout"],
+            "device": cfg["live_test"]["main"]["lstm"]["device"],
+            "weights_path": cfg["live_test"]["main"]["lstm"]["weights_path"],
+        }
+        strategy = StrategyLSTM(run_name=run_name, network_params=network_params, buy_percentage=buy_percentage_,
+                                debug=False)
 
     # Create the live test object
-    live_test = LiveTest("eth_usd", strategy, wallet)
+    live_test = LiveTest("btc_usd", strategy, wallet)
 
     # Run the live test
     live_test.run()

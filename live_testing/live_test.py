@@ -1,4 +1,7 @@
 import asyncio
+import pandas as pd
+
+import numpy as np
 import websockets
 import requests
 import time
@@ -31,7 +34,7 @@ from utils.notifications import send_message
 from Strategies.SFStrategy import SFStrategy
 from Strategies.SFStrategy_I import SFStrategyI
 from Strategies.Strategy_FC import StrategyFC
-from Strategies.Strategy_LSTM import Strategy_LSTM
+from Strategies.Strategy_LSTM import StrategyLSTM
 from Strategies.Strategy_MACD import StrategyMACD
 
 
@@ -145,15 +148,51 @@ class LiveTest():
 
             if isinstance(self.strategy, StrategyMACD):
                 history = self.get_historical_price(days=0, minutes=60, interval="5")
-                price = {
+                data = {
                     "price": price,
                     "history": history
                 }
                 waiting_time = 1
+                self.orders, self.positions, self.wallet = self.strategy.check_conditions(
+                    orders=self.orders,
+                    positions=self.positions,
+                    data=data,
+                    time=t,
+                    wallet=self.wallet,
+                )
             elif isinstance(self.strategy, StrategyFC):
-                price = self.get_historical_price(days=0, minutes=10, interval="1")
+                data = self.get_historical_price(days=0, minutes=10, interval="1")
+                # Transform price to a pandas series
+                data = pd.Series(data)
                 waiting_time = 59
+                self.orders, self.positions, self.wallet = self.strategy.check_conditions(
+                    orders=self.orders,
+                    positions=self.positions,
+                    data=data,
+                    time=t,
+                    wallet=self.wallet,
+                )
+            elif isinstance(self.strategy, StrategyLSTM):
+                data = self.get_historical_price(days=0, minutes=10, interval="1")
+                # Transform price to a pandas series
+                data = pd.Series(data)
+                waiting_time = 59
+                self.orders, self.positions, self.wallet = self.strategy.check_conditions(
+                    orders=self.orders,
+                    positions=self.positions,
+                    data=data,
+                    time=t,
+                    wallet=self.wallet,
+                )
+
             else:
+                self.orders, self.positions, self.wallet = self.strategy.check_conditions(
+                    orders=self.orders,
+                    positions=self.positions,
+                    data=price,
+                    time=t,
+                    wallet=self.wallet,
+                )
                 waiting_time = 0.5
 
             t_string = f"{t.day}/{t.month}/{t.year}-{t.hour}:{t.minute}:{t.second}"
@@ -161,13 +200,7 @@ class LiveTest():
             if env == "local":
                 print_yellow(f"------- Update at " + t_string + " -------")
 
-            self.orders, self.positions, self.wallet = self.strategy.check_conditions(
-                orders=self.orders,
-                positions=self.positions,
-                data=price,
-                time=t,
-                wallet=self.wallet,
-            )
+
 
             # ----------------- Print the results ----------------- #
             if env == "local":

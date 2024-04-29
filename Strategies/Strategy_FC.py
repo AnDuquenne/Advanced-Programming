@@ -150,10 +150,13 @@ class StrategyFC:
         :return: The update lists of orders and positions and wallet
         """
 
+        assert len(data) == 10, "The data should contain 10 historical values"
+        assert isinstance(data, pd.Series), "The data should be a pandas Series"
+        assert isinstance(wallet, float), "The wallet should be a float"
+
         order_list = orders
         position_list = positions
         wallet = wallet
-        dollars_value = 0
 
         # Transform the data to a 1D tensor
         data = torch.tensor(data.values).float()
@@ -162,7 +165,7 @@ class StrategyFC:
         pred = self.forecaster.predict(data, forward)
 
         # Using predictions to take decisions
-        curr_price = data[-1]
+        curr_price = data[-1].item()
 
         # Amount to buy
         am_ = wallet * self.exposure / 100 / curr_price
@@ -173,7 +176,7 @@ class StrategyFC:
             # and one of the last 5 predictions is higher than the current price then buy
             min_pred = min(pred)
             max_pred = max(pred)
-            if curr_price < min_pred:
+            if curr_price * (1 + self.buy_percentage) < min_pred:
                 position_list.append(Position(
                     opening_price=curr_price,
                     opening_time=time,
@@ -183,18 +186,22 @@ class StrategyFC:
                     # closing_price=max_pred)
                 )
 
-            # Update the wallet value
-            wallet -= am_ * curr_price
+                # Update the wallet value
+                wallet -= am_ * curr_price
 
         else:
             print("Not enough money to buy")
 
         # Check positions
+        dollars_value = 0
         for pos in position_list:
             if pos.status == 'open':
                 if pos.closing_price <= curr_price:
                     pos.close(curr_price, time)
-                    wallet += pos.profit
+                    dollars_value += pos.dollars_value(curr_price)
+
+        # Update the wallet
+        wallet += dollars_value
 
         return order_list, position_list, wallet
 

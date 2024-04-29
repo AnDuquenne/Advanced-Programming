@@ -23,6 +23,13 @@ live_test:
       dropout: 0.2
       device: "cpu"
       weights_path: "../io/FC/2024-04-29_14-50-50/weights/weights.pt"
+    lstm:
+      window: 10
+      hidden_size: 16
+      num_layers: 5
+      dropout: 0.2
+      device: "cpu"
+      weights_path: "../io/LSTM/2024-04-24_01-19-18/weights/weights.pt"
     buy_percentage: 0.01
     wallet: 1000
 
