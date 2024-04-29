@@ -271,16 +271,16 @@ class LiveTest():
                     iter_log += 1
 
                     if env == "server":
-                        # Record pnl and wallet each 10 minutes
+                        # Record pnl and wallet each x minutes
                         # Check if file exists
-                        if not os.path.exists("io/live_test/perf/" + self.strategy.__str__() + ".csv"):
-                            subprocess.run(["touch", "io/live_test/perf/" + self.strategy.__str__() + ".csv"])
-                            with open("io/live_test/perf/" + self.strategy.__str__() + ".csv", "w") as f:
+                        if not os.path.exists("../io/live_test/perf/" + self.strategy.__str__() + ".csv"):
+                            subprocess.run(["touch", "../io/live_test/perf/" + self.strategy.__str__() + ".csv"])
+                            with open("../io/live_test/perf/" + self.strategy.__str__() + ".csv", "w") as f:
                                 f.write("iter,time,open_pos,closed_pos,tot_pos,"
                                         "pnl_pos_closed,pnl_pos_open,pnl_pos_tot,wallet_tot\n")
 
                         # Write the data
-                        with open("io/live_test/perf/" + self.strategy.__str__() + ".csv", "a") as f:
+                        with open("../io/live_test/perf/" + self.strategy.__str__() + ".csv", "a") as f:
                             f.write(f"{iter_log},"
                                     f"{t},"
                                     f"{open_pos_},"
@@ -310,16 +310,16 @@ class LiveTest():
                     iter_log += 1
 
                     if env == "server":
-                        # Record pnl and wallet each 10 minutes
+                        # Record pnl and wallet each x minutes
                         # Check if file exists
-                        if not os.path.exists("io/live_test/perf/" + self.strategy.__str__() + ".csv"):
-                            subprocess.run(["touch", "io/live_test/perf/" + self.strategy.__str__() + ".csv"])
-                            with open("io/live_test/perf/" + self.strategy.__str__() + ".csv", "w") as f:
+                        if not os.path.exists("../io/live_test/perf/" + self.strategy.__str__() + ".csv"):
+                            subprocess.run(["touch", "../io/live_test/perf/" + self.strategy.__str__() + ".csv"])
+                            with open("../io/live_test/perf/" + self.strategy.__str__() + ".csv", "w") as f:
                                 f.write("iter,time,open_pos,closed_pos,tot_pos,"
                                         "pnl_pos_closed,pnl_pos_open,pnl_pos_tot,wallet_tot\n")
 
                         # Write the data
-                        with open("io/live_test/perf/" + self.strategy.__str__() + ".csv", "a") as f:
+                        with open("../io/live_test/perf/" + self.strategy.__str__() + ".csv", "a") as f:
                             f.write(f"{iter_log},"
                                     f"{t},"
                                     f"{open_pos_},"
