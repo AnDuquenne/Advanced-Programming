@@ -20,7 +20,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Live test')
     parser.add_argument('--strategy', type=str, help='The strategy to use')
     parser.add_argument('--buy_percentage', type=float, default=0.01, help='Buy percentage')
-    parser.add_argument('--wallet', type=float, default=1000, help='The wallet amount')
+    parser.add_argument('--wallet', type=float, default=1000.00, help='The wallet amount')
     args = parser.parse_args()
 
     strat_ = args.strategy
