@@ -1,9 +1,3 @@
-from back_test import BackTest
-from Strategies.SFStrategy import SFStrategy
-from Strategies.SFStrategy_I import SFStrategyI
-from Strategies.Strategy_MACD import StrategyMACD
-
-import argparse
 import pandas as pd
 from tqdm import tqdm
 
@@ -19,6 +13,13 @@ parent_dir = os.path.dirname(current_dir)
 # Add the parent directory to sys.path
 sys.path.append(parent_dir)
 
+from back_test import BackTest
+from Strategies.SFStrategy import SFStrategy
+from Strategies.SFStrategy_I import SFStrategyI
+from Strategies.Strategy_MACD import StrategyMACD
+from Strategies.Strategy_FC import StrategyFC
+
+
 # Load the configuration file
 with open("../io/config.yaml", "r") as ymlfile:
     cfg = yaml.load(ymlfile, Loader=yaml.FullLoader)
@@ -32,9 +33,9 @@ if __name__ == "__main__":
 
     data_files = cfg["back_test"]["main"]["data_files"]
 
-    assert strat_ in ["SFStrategyI", "SFStrategy"], "Invalid strategy name"
+    assert strat_ in ["SFStrategyI", "SFStrategy", "StrategyFC"], "Invalid strategy name"
 
-    for file in tqdm(data_files):
+    for file in data_files:
         data = pd.read_csv("../" + file)
         # Transform the date column to datetime
 
@@ -47,6 +48,17 @@ if __name__ == "__main__":
             strategy = SFStrategyI(run_name=run_name, buy_percentage=buy_percentage_, debug=False)
         elif strat_ == "SFStrategy":
             strategy = SFStrategy(run_name=run_name, buy_percentage=buy_percentage_, debug=False)
+        elif strat_ == "StrategyFC":
+
+            network_params = {
+                "input_size": cfg["back_test"]["main"]["fc"]["window"],
+                "hidden_size": cfg["back_test"]["main"]["fc"]["hidden_size"],
+                "dropout": cfg["back_test"]["main"]["fc"]["dropout"],
+                "device": cfg["back_test"]["main"]["fc"]["device"],
+                "weights_path": cfg["back_test"]["main"]["fc"]["weights_path"],
+            }
+
+            strategy = StrategyFC(run_name=run_name, network_params=network_params, buy_percentage=buy_percentage_, debug=False)
 
         # Create the live test object
         back_test = BackTest(data, strategy, wallet)

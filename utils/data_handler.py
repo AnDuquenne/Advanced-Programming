@@ -94,7 +94,7 @@ class DataCleaner:
 
         for file in tqdm(self.files):
             df = pd.read_csv(self.save_path + file)
-            df = df[['date', 'close', 'MACD', 'Signal Line', 'Histogram', 'RSI', 'Stochastic RSI', 'DPO', 'CC']]
+            df = df[['date', 'close', 'MACD', 'Signal Line', 'Histogram', 'DPO', 'CC']]
             df.set_index('date', inplace=True)
 
             df_numpy = dc(df).to_numpy()

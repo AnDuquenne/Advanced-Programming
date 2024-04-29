@@ -23,7 +23,7 @@ back_test:
       dropout: 0.2
       device: "cpu"
       weights_path: "../io/FC/2024-04-29_14-50-50/weights/weights.pt"
-    buy_percentage: 0.01
+    buy_percentage: 0.05
     wallet: 1000
     data_files: ['Data/crypto-1min/btc-min1/cleaned_data/BTC_april2018.csv',
                 'Data/crypto-1min/btc-min1/cleaned_data/BTC_april2019.csv',

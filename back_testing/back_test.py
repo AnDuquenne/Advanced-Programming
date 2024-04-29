@@ -29,7 +29,7 @@ from utils.notifications import send_message
 
 from Strategies.SFStrategy import SFStrategy
 from Strategies.SFStrategy_I import SFStrategyI
-from Strategies.Strategy_FC import Strategy_FC
+from Strategies.Strategy_FC import StrategyFC
 from Strategies.Strategy_LSTM import Strategy_LSTM
 from Strategies.Strategy_MACD import StrategyMACD
 
@@ -54,11 +54,16 @@ class BackTest:
         results = []
 
         # For each time step check if orders should be executed or if positions should be closed
-        for i in range(1, time_sequence_length):
+        # Strating at 10 to avoid out of range error with networks
+        for i in tqdm(range(10, time_sequence_length)):
 
-            self.orders, self.positions, self.wallet = self.strategy.check_conditions(
-                self.orders, self.positions, self.df['close'][i], self.df['date'][i], self.wallet
-            )
+            if isinstance(self.strategy, StrategyFC):
+                self.orders, self.positions, self.wallet = self.strategy.check_conditions(
+                    self.orders, self.positions, self.df['close'][i-10:i], self.df['date'][i], self.wallet, 1)
+            else:
+                self.orders, self.positions, self.wallet = self.strategy.check_conditions(
+                    self.orders, self.positions, self.df['close'][i], self.df['date'][i], self.wallet
+                )
 
             # Open positions
             open_pos_ = 0
@@ -104,6 +109,11 @@ class BackTest:
                 write.writerows(results)
         elif isinstance(self.strategy, SFStrategy):
             with open('../io/back_test/strategies_time_evolution/SFStrategy/' + self.strategy.__str__() + '.csv', 'w', newline="") as f:
+                write = csv.DictWriter(f, fieldnames=fields)
+                write.writeheader()
+                write.writerows(results)
+        elif isinstance(self.strategy, StrategyFC):
+            with open('../io/back_test/strategies_time_evolution/StrategyFC/' + self.strategy.__str__() + '.csv', 'w', newline="") as f:
                 write = csv.DictWriter(f, fieldnames=fields)
                 write.writeheader()
                 write.writerows(results)

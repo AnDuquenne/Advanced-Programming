@@ -21,6 +21,7 @@ from sklearn.model_selection import train_test_split
 
 from utils.utils import *
 from utils.trainer_FC import Trainer
+from utils.market import *
 
 
 class TimeSeriesDataframe(Dataset):
@@ -41,9 +42,9 @@ class TimeSeriesDataframe(Dataset):
         return self.X[idx], self.y[idx]
 
 
-class Strategy_FC(nn.Module):
+class NetworkFC(nn.Module):
     def __init__(self, input_size, hidden_size, device, fc_out, dropout):
-        super(Strategy_FC, self).__init__()
+        super(NetworkFC, self).__init__()
 
         self.input_size = input_size
         self.hidden_size = hidden_size
@@ -60,6 +61,11 @@ class Strategy_FC(nn.Module):
         self.fc_3 = nn.Linear(self.hidden_size, self.fc_out)
 
     def forward(self, x):
+        """
+        forward method
+        :param x: [batch, features, seq_length]
+        :return:
+        """
 
         out = self.fc_1(x)
         out = self.relu_1(out)
@@ -73,6 +79,127 @@ class Strategy_FC(nn.Module):
 
     def load_weights(self, path):
         self.load_state_dict(torch.load(path))
+
+    def predict(self, ts, forward):
+        """
+        Make prediction for "forward" days
+        :param ts: the time series dim 1
+        :param forward: number of days
+        :return: the prediction for the next "forward" days
+        """
+        pred_ts = torch.zeros(ts.size(0) + forward)
+        pred_ts[:ts.size(0)] = ts
+        # print(pred_ts)
+        pred_ts = pred_ts.unsqueeze(0).unsqueeze(1)
+        pred_ts = pred_ts.float().to(self.device)
+        with torch.no_grad():
+            for i in range(forward):
+                pred = self.forward(pred_ts[:, :, i:i + ts.size(0)])
+                pred_ts[:, :, ts.size(0) + i] = pred
+
+        # print(ts)
+        # print(pred_ts)
+        # Squeeze the tensor pred_ts
+        pred_ts = pred_ts.squeeze()
+        # print(pred_ts)
+
+        return pred_ts[-forward:]
+
+
+class StrategyFC:
+    def __init__(self, run_name, network_params, buy_percentage=0.01, exposure=2, debug=True):
+        """
+        Initialize the strategy
+
+        :param run_name: Name of the run
+        :param buy_percentage: The percentage range to create the orders
+        ex. if buy_percentage = 0.01, the orders will be created at 1% intervals (200, 198, ...)
+        :param exposure: Wallet exposure to the orders
+        ex. if exposure = 0.5, 50% of the wallet is open to create the order book
+        """
+        self.run_name = run_name
+        self.buy_percentage = buy_percentage
+        self.exposure = exposure
+
+        INPUT_SIZE = network_params['input_size']
+        HIDDEN_SIZE = network_params['hidden_size']
+        DROPOUT = network_params['dropout']
+        DEVICE = network_params['device']
+        weights_path = network_params['weights_path']
+
+        self.forecaster = NetworkFC(input_size=INPUT_SIZE,
+                                    hidden_size=HIDDEN_SIZE,
+                                    fc_out=1,
+                                    dropout=DROPOUT,
+                                    device=DEVICE).to(DEVICE)
+
+        self.forecaster.load_weights(weights_path)
+
+    def check_conditions(self, orders, positions, data, time, wallet, forward):
+        """
+        Central part of the strategy class. It takes as input the list of positions and orders and the data.
+        The data is composed of the prices of the index as well as what the strategy needs to make a decision.
+        In this case, the strategy is very simple and only needs the closing prices.
+
+        :param orders: A list of the orders
+        :param positions: A list of the positions
+        :param data: The index prices (10 historical values)
+        :param time: The time of the index price
+        :param wallet: The amount disposable to trade
+        :param forward: The number of days to predict
+        :return: The update lists of orders and positions and wallet
+        """
+
+        order_list = orders
+        position_list = positions
+        wallet = wallet
+        dollars_value = 0
+
+        # Transform the data to a 1D tensor
+        data = torch.tensor(data.values).float()
+
+        # Get the prediction
+        pred = self.forecaster.predict(data, forward)
+
+        # Using predictions to take decisions
+        curr_price = data[-1]
+
+        # Amount to buy
+        am_ = wallet * self.exposure / 100 / curr_price
+
+        # If enough money to buy
+        if wallet > am_ * curr_price:
+            # If the next price is lower than the current price,
+            # and one of the last 5 predictions is higher than the current price then buy
+            min_pred = min(pred)
+            max_pred = max(pred)
+            if curr_price < min_pred:
+                position_list.append(Position(
+                    opening_price=curr_price,
+                    opening_time=time,
+                    amount=am_,
+                    direction='long',
+                    closing_price=curr_price*(1 + self.buy_percentage))
+                    # closing_price=max_pred)
+                )
+
+            # Update the wallet value
+            wallet -= am_ * curr_price
+
+        else:
+            print("Not enough money to buy")
+
+        # Check positions
+        for pos in position_list:
+            if pos.status == 'open':
+                if pos.closing_price <= curr_price:
+                    pos.close(curr_price, time)
+                    wallet += pos.profit
+
+        return order_list, position_list, wallet
+
+    def __str__(self):
+        return "StrategyFC" + self.run_name
 
 
 if __name__ == '__main__':
@@ -123,15 +250,15 @@ if __name__ == '__main__':
         min_max_scale=MIN_MAX_SCALING
     )
 
-    cleaner = DataCleaner('ETH', '../io/config.yaml')
-    cleaner.prepare_dataframe_FC(
-        window=WINDOW,
-        look_forward=LOOK_FORWARD,
-        log_close=LOG_CLOSE,
-        close_returns=CLOSE_RETURNS,
-        only_close=ONLY_CLOSE,
-        min_max_scale=MIN_MAX_SCALING
-    )
+    # cleaner = DataCleaner('ETH', '../io/config.yaml')
+    # cleaner.prepare_dataframe_FC(
+    #     window=WINDOW,
+    #     look_forward=LOOK_FORWARD,
+    #     log_close=LOG_CLOSE,
+    #     close_returns=CLOSE_RETURNS,
+    #     only_close=ONLY_CLOSE,
+    #     min_max_scale=MIN_MAX_SCALING
+    # )
 
     # ------------------------------------------------------------------------ #
     #                        Load and process the data                         #
@@ -148,7 +275,7 @@ if __name__ == '__main__':
     #                             Define the model                             #
     # ------------------------------------------------------------------------ #
 
-    model = Strategy_FC(input_size=X.size(2), hidden_size=HIDDEN_SIZE, fc_out=y_train.size(1),
+    model = NetworkFC(input_size=X.size(2), hidden_size=HIDDEN_SIZE, fc_out=y_train.size(1),
                dropout=DROPOUT, device=DEVICE).to(DEVICE)
 
     # ------------------------------------------------------------------------ #
@@ -195,5 +322,5 @@ if __name__ == '__main__':
     trainer = Trainer(train_loader, test_loader, model, optimizer, criterion, scheduler, DEVICE, NB_EPOCHS,
                       SAVE_PATH_LOSS, SAVE_PATH_WEIGHTS, MODEL_NAME, DEBUG, SAVE_PATH, WANDB)
 
-    # trainer.train()
-    trainer.evaluate(X_test[50:100, :, :], y_test[50:100, :, :])
+    trainer.train()
+    # trainer.evaluate(X_test[50:100, :, :], y_test[50:100, :, :])

@@ -16,14 +16,15 @@ data_path:
 
 back_test:
   main:
-    strategy: "StrategyFC"
-    fc:
-      window: 10
-      hidden_size: 100
-      dropout: 0.2
-      device: "cpu"
-      weights_path: "../io/FC/2024-04-29_14-50-50/weights/weights.pt"
-    buy_percentage: 0.01
+    strategy:
+      name: "SFStrategy"
+      fc:
+        window: 10
+        hidden_size: 100
+        dropout: 0.2
+        device: "cpu"
+        weights_path: "io/FC/2024-04-22_17-28-27/weights"
+    buy_percentage: 0.05
     wallet: 1000
     data_files: ['Data/crypto-1min/btc-min1/cleaned_data/BTC_april2018.csv',
                 'Data/crypto-1min/btc-min1/cleaned_data/BTC_april2019.csv',
@@ -86,14 +87,14 @@ Strategy:
     loss_path: "io/FC/Losses/"
     weights_path: "io/FC/Weights/"
     save_path: "io/FC/"
-    load_weights: False
+    load_weights: True
     batch_size: 2048
     learning_rate: 0.001
     nb_epochs: 5000
     hidden_size: 100
     dropout: 0.2
     input_size: 1
-    wandb: False
+    wandb: True
     debug: False
     dh_params:
       window: 10
