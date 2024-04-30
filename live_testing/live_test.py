@@ -147,53 +147,73 @@ class LiveTest():
             price, t = self.get_price()
 
             if isinstance(self.strategy, StrategyMACD):
-                history = self.get_historical_price(days=0, minutes=60, interval="5")
-                data = {
-                    "price": price,
-                    "history": history
-                }
-                waiting_time = 1
-                self.orders, self.positions, self.wallet = self.strategy.check_conditions(
-                    orders=self.orders,
-                    positions=self.positions,
-                    data=data,
-                    time=t,
-                    wallet=self.wallet,
-                )
+                try:
+                    history = self.get_historical_price(days=0, minutes=60, interval="5")
+                    data = {
+                        "price": price,
+                        "history": history
+                    }
+                    waiting_time = 1
+                    self.orders, self.positions, self.wallet = self.strategy.check_conditions(
+                        orders=self.orders,
+                        positions=self.positions,
+                        data=data,
+                        time=t,
+                        wallet=self.wallet,
+                    )
+                except:
+                    print_red("Error getting historical data")
+                    waiting_time = 1
+                    continue
             elif isinstance(self.strategy, StrategyFC):
-                data = self.get_historical_price(days=0, minutes=10, interval="1")
-                # Transform price to a pandas series
-                data = pd.Series(data)
-                waiting_time = 59
-                self.orders, self.positions, self.wallet = self.strategy.check_conditions(
-                    orders=self.orders,
-                    positions=self.positions,
-                    data=data,
-                    time=t,
-                    wallet=self.wallet,
-                )
+                try:
+                    data = self.get_historical_price(days=0, minutes=10, interval="1")
+                    # Transform price to a pandas series
+                    data = pd.Series(data)
+                    waiting_time = 59
+                    self.orders, self.positions, self.wallet = self.strategy.check_conditions(
+                        orders=self.orders,
+                        positions=self.positions,
+                        data=data,
+                        time=t,
+                        wallet=self.wallet,
+                    )
+                except:
+                    print_red("Error getting historical data")
+                    waiting_time = 1
+                    continue
             elif isinstance(self.strategy, StrategyLSTM):
-                data = self.get_historical_price(days=0, minutes=10, interval="1")
-                # Transform price to a pandas series
-                data = pd.Series(data)
-                waiting_time = 59
-                self.orders, self.positions, self.wallet = self.strategy.check_conditions(
-                    orders=self.orders,
-                    positions=self.positions,
-                    data=data,
-                    time=t,
-                    wallet=self.wallet,
-                )
+                try:
+                    data = self.get_historical_price(days=0, minutes=10, interval="1")
+                    # Transform price to a pandas series
+                    data = pd.Series(data)
+                    waiting_time = 59
+                    self.orders, self.positions, self.wallet = self.strategy.check_conditions(
+                        orders=self.orders,
+                        positions=self.positions,
+                        data=data,
+                        time=t,
+                        wallet=self.wallet,
+                    )
+                except:
+                    print_red("Error getting historical data")
+                    waiting_time = 1
+                    continue
 
             else:
-                self.orders, self.positions, self.wallet = self.strategy.check_conditions(
-                    orders=self.orders,
-                    positions=self.positions,
-                    data=price,
-                    time=t,
-                    wallet=self.wallet,
-                )
-                waiting_time = 0.5
+                try:
+                    self.orders, self.positions, self.wallet = self.strategy.check_conditions(
+                        orders=self.orders,
+                        positions=self.positions,
+                        data=price,
+                        time=t,
+                        wallet=self.wallet,
+                    )
+                    waiting_time = 0.5
+                except:
+                    print_red("Error getting historical data")
+                    waiting_time = 1
+                    continue
 
             t_string = f"{t.day}/{t.month}/{t.year}-{t.hour}:{t.minute}:{t.second}"
 
