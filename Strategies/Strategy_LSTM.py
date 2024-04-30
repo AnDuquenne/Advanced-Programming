@@ -253,15 +253,15 @@ if __name__ == '__main__':
         min_max_scale=MIN_MAX_SCALING
     )
 
-    cleaner = DataCleaner('ETH', '../io/config.yaml')
-    cleaner.prepare_dataframe_LSTM(
-        window=WINDOW,
-        look_forward=LOOK_FORWARD,
-        log_close=LOG_CLOSE,
-        close_returns=CLOSE_RETURNS,
-        only_close=ONLY_CLOSE,
-        min_max_scale=MIN_MAX_SCALING
-    )
+    # cleaner = DataCleaner('ETH', '../io/config.yaml')
+    # cleaner.prepare_dataframe_FC(
+    #     window=WINDOW,
+    #     look_forward=LOOK_FORWARD,
+    #     log_close=LOG_CLOSE,
+    #     close_returns=CLOSE_RETURNS,
+    #     only_close=ONLY_CLOSE,
+    #     min_max_scale=MIN_MAX_SCALING
+    # )
 
     # ------------------------------------------------------------------------ #
     #                        Load and process the data                         #

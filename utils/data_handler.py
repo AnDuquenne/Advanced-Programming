@@ -21,7 +21,7 @@ import torch
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import train_test_split
 
-from utils.technical_analysis import *
+from technical_analysis import *
 
 from torch.utils.data import Dataset, DataLoader
 
@@ -73,14 +73,16 @@ class DataCleaner:
 
             # Create the MACD
             macd = MACD(data['close'])
-            data['MACD'] = macd.get_macd
-            data['Signal Line'] = macd.get_signal_line
-            data['Histogram'] = macd.get_histogram
+            data['MACD'] = macd.get_macd()
+            data['Signal Line'] = macd.get_signal_line()
+            data['Histogram'] = macd.get_histogram()
 
             # data['RSI'] = RSI(data['close'], 14).get_rsi
             # data['Stochastic RSI'] = StochasticRSI(data['close'], 14).get_stochastic_rsi
-            data['DPO'] = DPO(data['close'], 21).get_dpo
-            data['CC'] = CC(data['close'], 14).get_cc
+            dpo = DPO(data['close'], 21)
+            data['DPO'] = dpo.get_dpo()
+            cc = CC(data['close'], 14)
+            data['CC'] = cc.get_cc()
 
             # Remove the first 360 rows, the MACD tends to the good value after 3240 rows,
             # before, it is biased due to lack of historical values
@@ -151,8 +153,10 @@ class DataCleaner:
 
         for file in tqdm(self.files):
             df = pd.read_csv(self.save_path + file)
-            df = df[['date', 'close', 'MACD', 'Signal Line', 'Histogram', 'RSI', 'Stochastic RSI', 'DPO', 'CC']]
+            df = df[['date', 'close', 'MACD', 'Signal Line', 'Histogram', 'DPO', 'CC']]
             df.set_index('date', inplace=True)
+
+            print(df)
 
             df_numpy = dc(df).to_numpy()
 
@@ -289,6 +293,6 @@ if __name__ == '__main__':
         config = yaml.safe_load(file)
 
     # Clean the data
-    cleaner = DataCleaner('ETH', '../io/config.yaml')
-    # cleaner.clean_data()
-    cleaner.prepare_dataframe_FC(10, 1)
+    cleaner = DataCleaner('BTC', '../io/config.yaml')
+    cleaner.clean_data()
+    # cleaner.prepare_dataframe_FC(10, 1)

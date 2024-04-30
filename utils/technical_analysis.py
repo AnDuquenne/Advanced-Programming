@@ -78,17 +78,20 @@ class MACD:
         self.signal_line = EMA(self.macd, 9).get_ema
         self.histogram = self.macd - self.signal_line
 
+
     def get_macd(self):
         """
         Return the MACD values.
         """
         return np.round(self.macd, 4)
 
+
     def get_signal_line(self):
         """
         Return the signal line values.
         """
         return np.round(self.signal_line, 4)
+
 
     def get_histogram(self):
         """
@@ -146,6 +149,7 @@ class RSI:
             # if RS == 0 or RS == np.inf or RS == np.nan or RS == -np.inf:
             #     print(t, RS, self.rsi[t])
 
+
     def get_rsi(self):
         """
         Return the RSI values.
@@ -176,6 +180,7 @@ class StochasticRSI:
             max_RSI = max(self.RSI[t - self.window:t])
             self.stochastic_rsi[t] = (self.RSI[t] - min_RSI) / (max_RSI - min_RSI) if max_RSI - min_RSI != 0 else 0
 
+
     def get_stochastic_rsi(self):
         """
         Return the Stochastic RSI values.
@@ -202,6 +207,7 @@ class DPO:
         for t in range(self.window, len(self.time_series)):
             simple_moving_average = np.mean(self.time_series[t - self.window:t])
             self.dpo[t] = self.time_series[t - self.window // 2] - simple_moving_average
+
 
     def get_dpo(self):
         """
@@ -233,6 +239,7 @@ class CC:
 
         # 10 periods weighted moving average
         self.cc = WMA(self.cc, 10).get_wma
+
 
     def get_cc(self):
         """

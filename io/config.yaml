@@ -122,15 +122,15 @@ Strategy:
       only_close: True
       min_max_scaling: False
   LSTM:
-    data_path_X: "Data/crypto-1min/eth-min1/neural_data_LSTM/ETH_MACD_january2024_X.pt"
-    data_path_y: "Data/crypto-1min/eth-min1/neural_data_LSTM/ETH_MACD_january2024_y.pt"
+    data_path_X: "Data/crypto-1min/btc-min1/neural_data_LSTM/BTC_january2024_X.pt"
+    data_path_y: "Data/crypto-1min/btc-min1/neural_data_LSTM/BTC_january2024_y.pt"
     loss_path: "io/LSTM/Losses/"
     weights_path: "io/LSTM/Weights/"
     save_path: "io/LSTM/"
     load_weights: True
-    batch_size: 512
+    batch_size: 2048
     learning_rate: 0.001
-    nb_epochs: 2000
+    nb_epochs: 400
     hidden_size: 16
     num_layers: 5
     dropout: 0.2
