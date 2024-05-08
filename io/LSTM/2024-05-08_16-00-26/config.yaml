@@ -128,7 +128,7 @@ Strategy:
     weights_path: "io/LSTM/Weights/"
     save_path: "io/LSTM/"
     load_weights: False
-    batch_size: 256
+    batch_size: 64
     learning_rate: 0.001
     nb_epochs: 400
     hidden_size: 32

@@ -127,12 +127,12 @@ Strategy:
     loss_path: "io/LSTM/Losses/"
     weights_path: "io/LSTM/Weights/"
     save_path: "io/LSTM/"
-    load_weights: False
-    batch_size: 256
+    load_weights: True
+    batch_size: 2048
     learning_rate: 0.001
     nb_epochs: 400
-    hidden_size: 32
-    num_layers: 10
+    hidden_size: 16
+    num_layers: 5
     dropout: 0.2
     input_size: 1
     wandb: True
@@ -140,10 +140,10 @@ Strategy:
     dh_params:
       window: 10
       look_forward: 1
-      log_close: True
+      log_close: False
       close_returns: False
       only_close: True
-      min_max_scaling: False
+      min_max_scaling: True
   Transformers:
     data_path_X_encoder: "Data/crypto-1min/eth-min1/neural_data_transformers/BTC_january2024_X_encoder.pt"
     data_path_X_decoder: "Data/crypto-1min/eth-min1/neural_data_transformers/BTC_january2024_X_decoder.pt"
