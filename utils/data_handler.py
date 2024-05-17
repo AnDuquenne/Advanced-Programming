@@ -21,7 +21,7 @@ import torch
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
 from sklearn.model_selection import train_test_split
 
-from technical_analysis import *
+from tech_analysis import MACD, DPO, CC
 
 from torch.utils.data import Dataset, DataLoader
 
