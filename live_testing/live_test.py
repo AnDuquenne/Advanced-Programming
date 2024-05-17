@@ -274,7 +274,7 @@ class LiveTest():
                     isinstance(self.strategy, SFStrategyI) or
                     isinstance(self.strategy, StrategyMACD)):
                 if t.second == 30 and t.minute % 2 == 0 and not notif_sent:
-                    title = emoji.emojize(":clock:") + " Recurrent update " + emoji.emojize(":clock:") + "\n\n"
+                    title = emoji.emojize(":eight-thirty:") + " Recurrent update " + emoji.emojize(":eight-thirty:") + "\n\n"
                     msg = ""
                     msg += f"Positions:\n"
                     msg += f"\t\t open: {open_pos_}\n"
@@ -313,7 +313,7 @@ class LiveTest():
 
             elif isinstance(self.strategy, StrategyFC) or isinstance(self.strategy, StrategyLSTM):
                 if t.minute % 2 == 0 and not notif_sent:
-                    title = emoji.emojize(":clock:") + " Recurrent update " + emoji.emojize(":clock:") + "\n\n"
+                    title = emoji.emojize(":eight-thirty:") + " Recurrent update " + emoji.emojize(":eight-thirty:") + "\n\n"
                     msg = ""
                     msg += f"Positions:\n"
                     msg += f"\t\t open: {open_pos_}\n"
