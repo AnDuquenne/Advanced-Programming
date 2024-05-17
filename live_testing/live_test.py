@@ -313,7 +313,7 @@ class LiveTest():
 
             elif isinstance(self.strategy, StrategyFC) or isinstance(self.strategy, StrategyLSTM):
                 if t.minute % 2 == 0 and not notif_sent:
-                    title = emoji.emojize(":clock1:") + " Recurrent update " + emoji.emojize(":clock1:") + "\n\n"
+                    title = emoji.emojize(":clock:") + " Recurrent update " + emoji.emojize(":clock:") + "\n\n"
                     msg = ""
                     msg += f"Positions:\n"
                     msg += f"\t\t open: {open_pos_}\n"
