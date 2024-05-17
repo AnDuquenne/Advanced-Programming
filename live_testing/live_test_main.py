@@ -10,6 +10,22 @@ import argparse
 import datetime
 import yaml
 
+# load environment variables
+from dotenv import load_dotenv
+
+import sys
+import os
+
+load_dotenv()
+env = os.getenv("environment")
+
+# Get the current script's directory
+current_dir = os.path.dirname(os.path.abspath(__file__))
+# Get the parent directory by going one level up
+parent_dir = os.path.dirname(current_dir)
+# Add the parent directory to sys.path
+sys.path.append(parent_dir)
+
 # Load the configuration file
 with open("../io/config.yaml", "r") as ymlfile:
     cfg = yaml.load(ymlfile, Loader=yaml.FullLoader)

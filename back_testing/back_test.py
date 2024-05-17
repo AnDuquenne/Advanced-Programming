@@ -24,7 +24,7 @@ parent_dir = os.path.dirname(current_dir)
 sys.path.append(parent_dir)
 
 from utils.utils import *
-from utils.tech_analysis import MACD
+from utils.technical_analysis import MACD
 from utils.notifications import send_message
 
 from Strategies.SFStrategy import SFStrategy

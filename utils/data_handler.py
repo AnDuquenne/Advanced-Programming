@@ -1,11 +1,17 @@
 import os
 import sys
+
 # Get the current script's directory
 current_dir = os.path.dirname(os.path.abspath(__file__))
 # Get the parent directory by going one level up
 parent_dir = os.path.dirname(current_dir)
 # Add the parent directory to sys.path
 sys.path.append(parent_dir)
+
+# Add the directory containing your module to the Python path
+module_path = os.path.abspath(os.path.join('..', 'utils'))
+if module_path not in sys.path:
+    sys.path.append(module_path)
 
 import pandas as pd
 import numpy as np
@@ -22,7 +28,7 @@ import torch
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
 from sklearn.model_selection import train_test_split
 
-from tech_analysis import MACD, DPO, CC
+from technical_analysis import *
 
 from torch.utils.data import Dataset, DataLoader
 
