@@ -70,6 +70,14 @@ class Trainer:
                 signal_decoder = signal_decoder.float()
                 target = target.float()
 
+                # if idx == 0:
+                #     print("signal_encoder", signal_encoder.size())
+                #     print("signal_decoder", signal_decoder.size())
+                #     print("target", target.size())
+                #     print("signal_encoder", signal_encoder[0, :, :])
+                #     print("signal_decoder", signal_decoder[0, :, :])
+                #     print("target", target[0, :, :])
+
                 # Move the data to the device
                 signal_encoder = signal_encoder.to(self.device)
                 signal_decoder = signal_decoder.to(self.device)

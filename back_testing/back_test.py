@@ -30,7 +30,7 @@ from utils.notifications import send_message
 from Strategies.SFStrategy import SFStrategy
 from Strategies.SFStrategy_I import SFStrategyI
 from Strategies.Strategy_FC import StrategyFC
-from Strategies.Strategy_LSTM import Strategy_LSTM
+from Strategies.Strategy_LSTM import StrategyLSTM
 from Strategies.Strategy_MACD import StrategyMACD
 
 

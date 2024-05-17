@@ -18,7 +18,7 @@ from tqdm import tqdm
 
 import torch
 
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import MinMaxScaler, StandardScaler
 from sklearn.model_selection import train_test_split
 
 from technical_analysis import *
@@ -149,20 +149,23 @@ class DataCleaner:
             torch.save(y_torch, self.save_neural_path_fc + file.replace('.csv', '_y.pt'))
 
     def prepare_dataframe_LSTM(self, window, look_forward=1, log_close=False, close_returns=False, only_close=False,
-                             min_max_scale=False):
+                             min_max_scale=False, cumulative_log_returns=False, standard_scale=False):
 
         for file in tqdm(self.files):
             df = pd.read_csv(self.save_path + file)
             df = df[['date', 'close', 'MACD', 'Signal Line', 'Histogram', 'DPO', 'CC']]
             df.set_index('date', inplace=True)
 
-            print(df)
-
             df_numpy = dc(df).to_numpy()
 
             if min_max_scale:
                 # Scale the data over columns
                 scaler = MinMaxScaler(feature_range=(-1, 1))
+                df_numpy = scaler.fit_transform(df_numpy)
+
+            if standard_scale:
+                # Scale the data over columns
+                scaler = StandardScaler()
                 df_numpy = scaler.fit_transform(df_numpy)
 
             if log_close:
@@ -177,6 +180,14 @@ class DataCleaner:
                 # Remove 1, to have a percentage change
                 df_numpy[:, 0] -= 1
                 df_numpy[:, 0] *= 100
+
+            if cumulative_log_returns:
+                # Calculate the returns as being the ratio between the log prices
+                df_numpy[1:, 0] = df_numpy[1:, 0] / df_numpy[:-1, 0]
+                # Remove the first row
+                df_numpy = df_numpy[1:, :]
+                # Remove 1, to have a percentage change
+                df_numpy[:, 0] = np.log(df_numpy[:, 0] + 1)
 
             if only_close:
                 df_numpy = df_numpy[:, 0].reshape(-1, 1)
@@ -212,7 +223,7 @@ class DataCleaner:
 
         for file in tqdm(self.files):
             df = pd.read_csv(self.save_path + file)
-            df = df[['date', 'close', 'MACD', 'Signal Line', 'Histogram', 'RSI', 'Stochastic RSI', 'DPO', 'CC']]
+            df = df[['date', 'close', 'MACD', 'Signal Line', 'Histogram', 'DPO', 'CC']]
             df.set_index('date', inplace=True)
 
             # df['MACD'] /= df['MACD'].max();
@@ -234,7 +245,7 @@ class DataCleaner:
 
             if min_max_scale:
                 # Scale the data over columns
-                scaler = MinMaxScaler(feature_range=(-1, 1))
+                scaler = MinMaxScaler(feature_range=(0, 1))
                 df_numpy = scaler.fit_transform(df_numpy)
 
             if log_close:
@@ -285,6 +296,14 @@ class DataCleaner:
             torch.save(X_torch_decoder,
                        self.save_neural_path_transformers + file.replace('.csv', '_X_decoder.pt'))
             torch.save(y_torch, self.save_neural_path_transformers + file.replace('.csv', '_y.pt'))
+
+            # print(f"Saving in {self.save_neural_path_transformers + file.replace('.csv', '_X_encoder.pt')}")
+            # print(f"Saving in {self.save_neural_path_transformers + file.replace('.csv', '_X_decoder.pt')}")
+            # print(f"Saving in {self.save_neural_path_transformers + file.replace('.csv', '_y.pt')}")
+            #
+            # print(f"X_torch_encoder shape: {X_torch_encoder.size()}")
+            # print(f"X_torch_decoder shape: {X_torch_decoder.size()}")
+            # print(f"y_torch shape: {y_torch.size()}")
 
 
 if __name__ == '__main__':

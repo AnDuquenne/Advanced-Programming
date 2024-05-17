@@ -105,11 +105,11 @@ Strategy:
     loss_path: "io/FC/Losses/"
     weights_path: "io/FC/Weights/"
     save_path: "io/FC/"
-    load_weights: False
-    batch_size: 2048
+    load_weights: True
+    batch_size: 256
     learning_rate: 0.001
-    nb_epochs: 5000
-    hidden_size: 100
+    nb_epochs: 2000
+    hidden_size: 200
     dropout: 0.2
     input_size: 1
     wandb: False
@@ -122,44 +122,46 @@ Strategy:
       only_close: True
       min_max_scaling: False
   LSTM:
-    data_path_X: "Data/crypto-1min/btc-min1/neural_data_LSTM/BTC_january2024_X.pt"
-    data_path_y: "Data/crypto-1min/btc-min1/neural_data_LSTM/BTC_january2024_y.pt"
+    data_path_X: "Data/crypto-1min/btc-min1/neural_data_LSTM/BTC_february2024_X.pt"
+    data_path_y: "Data/crypto-1min/btc-min1/neural_data_LSTM/BTC_february2024_y.pt"
     loss_path: "io/LSTM/Losses/"
     weights_path: "io/LSTM/Weights/"
     save_path: "io/LSTM/"
-    load_weights: False
+    load_weights: True
     batch_size: 256
     learning_rate: 0.001
-    nb_epochs: 400
-    hidden_size: 32
-    num_layers: 10
+    nb_epochs: 1000
+    hidden_size: 400
+    num_layers: 5
     dropout: 0.2
     input_size: 1
-    wandb: True
+    wandb: False
     debug: False
     dh_params:
       window: 10
       look_forward: 1
-      log_close: True
+      log_close: False
       close_returns: False
       only_close: True
-      min_max_scaling: False
+      min_max_scaling: True
+      standard_scale: False
+      cumulative_log_returns: False
   Transformers:
-    data_path_X_encoder: "Data/crypto-1min/eth-min1/neural_data_transformers/BTC_january2024_X_encoder.pt"
-    data_path_X_decoder: "Data/crypto-1min/eth-min1/neural_data_transformers/BTC_january2024_X_decoder.pt"
-    data_path_y: "Data/crypto-1min/eth-min1/neural_data_transformers/ETH_MACD_january2024_y.pt"
+    data_path_X_encoder: "Data/crypto-1min/btc-min1/neural_data_transformers/BTC_january2024_X_encoder.pt"
+    data_path_X_decoder: "Data/crypto-1min/btc-min1/neural_data_transformers/BTC_january2024_X_decoder.pt"
+    data_path_y: "Data/crypto-1min/btc-min1/neural_data_transformers/BTC_january2024_y.pt"
     weights_path: "io/Transformers/Weights/"
     loss_path: "io/Transformers/Losses/"
     save_path: "io/Transformers/"
     load_weights: True
-    batch_size: 512
-    learning_rate: 0.001
-    nb_epochs: 150
+    batch_size: 2048
+    learning_rate: 0.01
+    nb_epochs: 200
     embedding_size: 128
-    kernel_size: 5
+    kernel_size: 3
     nb_heads: 8
     padding: 2
-    nb_encoder_layers: 12
+    nb_encoder_layers: 8
     forward_expansion: 4
     forward_expansion_decoder: 4
     max_len: 5000
@@ -175,4 +177,4 @@ Strategy:
       log_close: False
       close_returns: False
       only_close: True
-      min_max_scaling: False
+      min_max_scaling: True

@@ -64,6 +64,8 @@ class NetworkLSTM(nn.Module):
                             dropout=self.dropout, batch_first=True)
         self.fc = nn.Linear(self.hidden_size, self.fc_out)
 
+        self.initialize_weights()
+
     def forward(self, x):
         _, (h_n, _) = self.lstm(x)
         out = self.fc(h_n[-1])
@@ -99,6 +101,18 @@ class NetworkLSTM(nn.Module):
             self.load_state_dict(torch.load(path))
         else:
             self.load_state_dict(torch.load(path, map_location=self.device))
+
+    def initialize_weights(self):
+        for m in self.modules():
+            if isinstance(m, nn.LSTM):
+                for name, param in m.named_parameters():
+                    if 'weight' in name:
+                        nn.init.xavier_normal_(param)
+                    else:
+                        nn.init.zeros_(param)
+            elif isinstance(m, nn.Linear):
+                nn.init.xavier_normal_(m.weight)
+                nn.init.zeros_(m.bias)
 
 class StrategyLSTM:
     def __init__(self, run_name, network_params, buy_percentage=0.01, exposure=2, debug=True):
@@ -230,6 +244,8 @@ if __name__ == '__main__':
     CLOSE_RETURNS = config['Strategy']['LSTM']['dh_params']['close_returns']
     ONLY_CLOSE = config['Strategy']['LSTM']['dh_params']['only_close']
     MIN_MAX_SCALING = config['Strategy']['LSTM']['dh_params']['min_max_scaling']
+    CUMULATIVE_LOG_RETURNS = config['Strategy']['LSTM']['dh_params']['cumulative_log_returns']
+    STANDARD_SCALE = config['Strategy']['LSTM']['dh_params']['standard_scale']
 
     DEBUG = config['Strategy']['LSTM']['debug']
     WANDB = config['Strategy']['LSTM']['wandb']
@@ -250,17 +266,20 @@ if __name__ == '__main__':
         log_close=LOG_CLOSE,
         close_returns=CLOSE_RETURNS,
         only_close=ONLY_CLOSE,
-        min_max_scale=MIN_MAX_SCALING
+        min_max_scale=MIN_MAX_SCALING,
+        cumulative_log_returns=CUMULATIVE_LOG_RETURNS,
+        standard_scale=STANDARD_SCALE
     )
 
     # cleaner = DataCleaner('ETH', '../io/config.yaml')
-    # cleaner.prepare_dataframe_FC(
+    # cleaner.prepare_dataframe_LSTM(
     #     window=WINDOW,
     #     look_forward=LOOK_FORWARD,
     #     log_close=LOG_CLOSE,
     #     close_returns=CLOSE_RETURNS,
     #     only_close=ONLY_CLOSE,
-    #     min_max_scale=MIN_MAX_SCALING
+    #     min_max_scale=MIN_MAX_SCALING,
+    #     cumulative_log_returns=CUMULATIVE_LOG_RETURNS
     # )
 
     # ------------------------------------------------------------------------ #
@@ -326,5 +345,5 @@ if __name__ == '__main__':
     trainer = Trainer(train_loader, test_loader, model, optimizer, criterion, scheduler, DEVICE, NB_EPOCHS,
                       SAVE_PATH_LOSS, SAVE_PATH_WEIGHTS, MODEL_NAME, DEBUG, SAVE_PATH, WANDB)
 
-    trainer.train()
-    # trainer.evaluate(X_test[500:700, :, :], y_test[500:700, :, :])
+    # trainer.train()
+    trainer.evaluate(X_test[:500, :, :], y_test[:500, :, :])

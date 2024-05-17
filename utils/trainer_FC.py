@@ -175,5 +175,6 @@ class Trainer:
         plt.plot(targets.cpu().detach().numpy(), label="targets")
         plt.plot(preds.cpu().detach().numpy(), label="predictions")
         plt.legend()
+        plt.savefig("../io/FC/predictions.pdf")
         plt.show()
 

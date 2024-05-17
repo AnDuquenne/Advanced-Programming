@@ -92,6 +92,7 @@ class Trainer:
                 tmp_train_loss[idx] = np.mean(loss.cpu().detach().item())
 
                 if idx == len(self.train_loader) - 1:
+
                     with torch.no_grad():
                         self.model.eval()
                         for idx_test, (input_test, target_test) in enumerate(self.test_loader):
@@ -154,8 +155,8 @@ class Trainer:
         :return:
         """
 
-        # self.model.eval()
-        #
+        self.model.eval()
+
         with torch.no_grad():
 
             X_batch = X_batch.float().to(self.device)
@@ -176,5 +177,6 @@ class Trainer:
         plt.plot(targets.cpu().detach().numpy(), label="targets")
         plt.plot(preds.cpu().detach().numpy(), label="predictions")
         plt.legend()
+        plt.savefig("../io/LSTM/predictions.pdf")
         plt.show()
 

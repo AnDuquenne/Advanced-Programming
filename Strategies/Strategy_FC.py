@@ -339,5 +339,5 @@ if __name__ == '__main__':
     trainer = Trainer(train_loader, test_loader, model, optimizer, criterion, scheduler, DEVICE, NB_EPOCHS,
                       SAVE_PATH_LOSS, SAVE_PATH_WEIGHTS, MODEL_NAME, DEBUG, SAVE_PATH, WANDB)
 
-    trainer.train()
-    # trainer.evaluate(X_test[50:100, :, :], y_test[50:100, :, :])
+    # trainer.train()
+    trainer.evaluate(X_test[0:500, :, :], y_test[0:500, :, :])
