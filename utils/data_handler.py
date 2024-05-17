@@ -1,4 +1,5 @@
-import os, sys
+import os
+import sys
 # Get the current script's directory
 current_dir = os.path.dirname(os.path.abspath(__file__))
 # Get the parent directory by going one level up
@@ -21,7 +22,7 @@ import torch
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
 from sklearn.model_selection import train_test_split
 
-from tech_analysis import MACD, DPO, CC
+from utils.tech_analysis import MACD, DPO, CC
 
 from torch.utils.data import Dataset, DataLoader
 
