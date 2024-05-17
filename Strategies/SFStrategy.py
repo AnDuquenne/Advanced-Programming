@@ -98,17 +98,17 @@ class SFStrategy:
                         print_green(f"\t Position value: {order.amount * data}")
                         send_message(
                             emoji.emojize(":green_circle:") +
-                            f"Order condition met at {round(data, 3)}\n",
-                            f"Position size: {round(order.amount, 3)} at {round(data, 3)}\n"
-                            f"Position value: {round(order.amount * data, 3)}\n"
-                            f"Wallet: {round(wallet, 5)}",
+                            f"Order condition met at {data}\n",
+                            f"Position size: {order.amount} at {data}\n"
+                            f"Position value: {order.amount * data}\n"
+                            f"Wallet: {wallet}",
                         )
                         if env == "server":
                             # Check if file exists
-                            if not os.path.exists('io/live_test/log/live_test_log_' + self.run_name + '.csv'):
+                            if not os.path.exists('../io/live_test/log/live_test_log_' + self.run_name + '.csv'):
                                 subprocess.run(
-                                    ["touch", 'io/live_test/log/live_test_log_' + self.run_name + '.csv'])
-                                with open('io/live_test/log/live_test_log_' + self.run_name + '.csv',
+                                    ["touch", '../io/live_test/log/live_test_log_' + self.run_name + '.csv'])
+                                with open('../io/live_test/log/live_test_log_' + self.run_name + '.csv',
                                           'w') as file:
                                     file.write("time,"
                                                "event,"
@@ -119,14 +119,14 @@ class SFStrategy:
                                                "infos"
                                                "\n")
                             # Log the order
-                            with open('io/live_test/log/live_test_log_' + self.run_name + '.csv', 'a') as file:
+                            with open('../io/live_test/log/live_test_log_' + self.run_name + '.csv', 'a') as file:
                                 file.write(t_string + ",")
                                 file.write(f"LONG ORDER,")
-                                file.write(f"{round(data, 3)},")
-                                file.write(f"{round(order.amount, 3)},")
-                                file.write(f"{round(order.amount * data, 3)},")
-                                file.write(f"{round(wallet, 5)},")
-                                file.write(f"LONG Order condition met at {round(data, 3)}")
+                                file.write(f"{data},")
+                                file.write(f"{order.amount},")
+                                file.write(f"{order.amount * data},")
+                                file.write(f"{wallet},")
+                                file.write(f"LONG Order condition met at {data}")
                                 file.write(f" -- From order created at {order.time}\n")
 
                     # Create a new position
@@ -160,16 +160,16 @@ class SFStrategy:
                     print_red(f"\t Position value: {position.amount * data}")
                     send_message(
                         emoji.emojize(":red_circle:") +
-                        f"Position closing condition met at {round(data, 3)}\n",
-                        f"Position size: {round(position.amount, 3)} at {round(data, 3)}\n"
-                        f"Position value: {round(position.amount * data, 3)}\n"
-                        f"Wallet: {round(wallet, 5)}",
+                        f"Position closing condition met at {data}\n",
+                        f"Position size: {position.amount} at {data}\n"
+                        f"Position value: {position.amount * data}\n"
+                        f"Wallet: {wallet}",
                     )
                     if env == "server":
                         # Check if file exists
-                        if not os.path.exists('io/live_test/log/live_test_log_' + self.run_name + '.csv'):
-                            subprocess.run(["touch", 'io/live_test/log/live_test_log_' + self.run_name + '.csv'])
-                            with open('io/live_test/log/live_test_log_' + self.run_name + '.csv', 'w') as file:
+                        if not os.path.exists('../io/live_test/log/live_test_log_' + self.run_name + '.csv'):
+                            subprocess.run(["touch", '../io/live_test/log/live_test_log_' + self.run_name + '.csv'])
+                            with open('../io/live_test/log/live_test_log_' + self.run_name + '.csv', 'w') as file:
                                 file.write("time,"
                                            "event,"
                                            "event_price,"
@@ -179,15 +179,15 @@ class SFStrategy:
                                            "infos"
                                            "\n")
                         # Log the order
-                        with open('io/live_test/log/live_test_log_' + self.run_name + '.csv',
+                        with open('../io/live_test/log/live_test_log_' + self.run_name + '.csv',
                                   'a') as file:
                             file.write(t_string + ",")
                             file.write(f"LONG POSITION,")
-                            file.write(f"{round(data, 3)},")
-                            file.write(f"{round(position.amount, 3)},")
-                            file.write(f"{round(position.amount * data, 3)},")
-                            file.write(f"{round(wallet, 5)},")
-                            file.write(f"LONG Position condition met at {round(data, 3)}")
+                            file.write(f"{data},")
+                            file.write(f"{position.amount},")
+                            file.write(f"{position.amount * data},")
+                            file.write(f"{wallet},")
+                            file.write(f"LONG Position condition met at {data}")
                             file.write(f" -- From order created at {position.opening_time}\n")
 
                 position.close(data, time)
@@ -206,7 +206,6 @@ class SFStrategy:
         wallet += dollars_value
 
         return order_list, position_list, wallet
-
 
     def __str__(self):
         return "SFStrategy-" + self.run_name
