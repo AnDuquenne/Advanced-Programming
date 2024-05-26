@@ -352,4 +352,4 @@ class LiveTest():
             if env == "local":
                 time.sleep(5 + waiting_time)
             else:
-                time.sleep(waiting_time)
+                time.sleep(1 + waiting_time)

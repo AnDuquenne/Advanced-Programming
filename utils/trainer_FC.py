@@ -154,8 +154,8 @@ class Trainer:
         :return:
         """
 
-        # self.model.eval()
-        #
+        self.model.eval()
+
         with torch.no_grad():
 
             X_batch = X_batch.float().to(self.device)
